@@ -1,9 +1,9 @@
 # 🤖 Piston AI
 
 Piston AI is a modular, terminal-based AI assistant focused on **voice interaction**, **automation**, and **extensibility**.  
-It combines **speech-to-text**, **text-to-speech**, and **LLM inference** (via Workers AI) to create a lightweight, hackable personal AI system.
+It combines **speech-to-text**, **text-to-speech**, and **LLM inference** (via Workers AI) to create a lightweight personal AI system.
 
-Think of it as a DIY voice assistant — but open, scriptable, and fun to mess with.
+It's basically a voiced AI assistant, just like Alexa, HomePod Siri, and more!
 
 ---
 
