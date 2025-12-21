@@ -1,0 +1,7 @@
+requests
+tinydb
+vosk
+edge-tts
+sounddevice
+geopy
+pydub
