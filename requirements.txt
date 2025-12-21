@@ -1,5 +1,0 @@
-requests
-tinydb
-vosk
-edge-tts
-sounddevice
