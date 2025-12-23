@@ -1,4 +1,11 @@
 import os
+import warnings
+
+# Hide the pygame welcome message
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+
+# Silence the specific pkg_resources deprecation warning
+warnings.filterwarnings("ignore", category=UserWarning, module='pygame.pkgdata')
 try:
     import requests
 except (ImportError, ModuleNotFoundError):
@@ -41,7 +48,9 @@ def askPiston(message: str, workerURL: str = WORKER_URL):
 
         if r.status_code != 200:
             return None, f"{r.status_code}: {r.reason}"
-
+        with open("data/tmp/response.txt", "w") as f:
+            import json
+            json.dump(r.json(), f, indent=4)
         return r.json(), None
 
     except Exception as e:
@@ -56,24 +65,27 @@ def saveHistory(historyFile: str = HISTORY_FILE, role: str = None, message: str 
     })
 
 
-def executeMessage(message: str):
-    cmdPrefix = message.split(" ")[0]
-    args = message.split()[1:]
-    executablePath = os.path.join(os.getcwd(), "bin", f"{cmdPrefix}.py")
-
-    if Path(executablePath).exists():
-        proc = subprocess.run(
-            ["python", executablePath, *args],
-            capture_output=True,
-            text=True
-        )
-
-        if proc.returncode != 0:
-            return f"[Command error]\n{proc.stderr.strip()}"
-
-        return proc.stdout.strip()
-
-    return message
+def executeMessage(message:str):
+    import platform
+    executable = f"bin/{message.split()[0]}.py"
+    arg = message.split()[1:]
+    args = []
+    if Path(executable).exists():
+        for item in arg:
+            args.append(item)
+        args = " ".join(args)
+        if args:
+            proc = subprocess.run(["python", executable, args], capture_output=True, text=True)
+        else:
+            proc = subprocess.run(["python", executable], capture_output=True, text=True)
+        stdout = proc.stdout
+        stderr = proc.stderr
+        if stderr:
+            return f"Error: {stderr}"
+        else:
+            return stdout
+    else:
+        return message
 
 
 def main(uInput:str=""):

@@ -1,130 +1,127 @@
-import utils, STTutils, TTSutils, os, platform, shutil, subprocess, json
+import utils, TTSutils, os, platform, shutil, subprocess, json
 from pathlib import Path
 from datetime import datetime
+import string
+import psutil
 
-def checkAlarms(path:str="data/alarm/alarms.json"):
+WAKE_WORDS = [
+    "hey raspberry pi",
+    "hey piston",
+    "hi",
+    "hey man",
+    "raspberry pi"
+]
+
+def removePunc(text:str) -> str:
+    translator = str.maketrans('', '', string.punctuation)
+    return text.translate(translator)
+
+def validateAlarms(path:str="data/alarm/alarms.json"):
     weekday = datetime.now().strftime("%a").lower()
-    with open(path) as f:
-        alarmRaw = json.load(f)
-    alarms = alarmRaw["alarms"]
+    parentDir = os.path.dirname(path)
+    DEFAULT_CONTENT = {
+        "alarms":[]
+    }
+    if not Path(parentDir).exists():
+        os.mkdir(parentDir)
+        with open(path,"w") as f:
+            json.dump(DEFAULT_CONTENT,f,indent=4)
+    if not Path(path).exists():
+        with open(path,"w") as f:
+            json.dump(DEFAULT_CONTENT,f,indent=4)
+    with open(path,"r") as f:
+        alarms = json.load(f)
+        alarms = alarms.get("alarms",[])
     for alarm in alarms:
-        if weekday in alarm["repeat"]:
-            alarm["enabled"] = True
+        if "enabled" in alarm and "repeat" in alarm:
+            if weekday in alarm["repeat"]:
+                alarm["enabled"] = True
+            else:
+                alarm["enabled"] = False
         else:
             alarm["enabled"] = False
-    alarmReturn = {
-        "alarms": alarms
-    }
-    with open(path, "w") as f:
-        json.dump(alarmReturn, f, indent=4)
+            alarm["repeat"] = []
 
-print("Welcome to Piston AI!")
-
-print("Mics:")
-STTutils.listMics()
-
-cachePath = "data/tmp"
-if Path(cachePath).exists():
-    print("Clearing cache...")
+def clearCache(cachePath:str="data/tmp"):
     shutil.rmtree(cachePath)
     os.mkdir(cachePath)
-else:
-    os.mkdir(cachePath)
 
-lat,lon,*_ = utils.getLocation()
-with open("data/tmp/locationCache.txt","w") as f:
-    f.write(f"{str(lat)}\n{str(lon)}")
-    f.close()
-
-print("Checking models...")
-verify = STTutils.verifyModel("VOSK")
-if not verify:
-    print("Downloading model...")
-    STTutils.downloadSTTModel()
-    print("Extracting model...")
-    STTutils.extractModel(destination="VOSK")
-else:
-    pass
-verify = STTutils.verifyModel("WakeVOSK")
-if not verify:
-    print("Downloading model...")
-    STTutils.downloadWakeModel()
-    print("Extracting model...")
-    STTutils.extractModel(path="WakeVOSK.zip",destination="WakeVOSK")
-else:
-    pass
-
-recognitionCount = 0
-try:
-    lat,lon,raw = utils.getLocation()
+if __name__ == "__main__":
+    if not psutil.sensors_battery().power_plugged:
+        print("\n\033[1mI would recommend you to plug in you laptop since FasterWhisper is demanding.\033[0m\n")
+    print("Clear Cache...")
+    clearCache()
+    print("Getting location...")
     with open("data/tmp/locationCache.txt","w") as f:
-        f.write(f"{str(lat)}\n{str(lon)}\n{raw['city']}")
+        lat,lon,data = utils.getLocation()
+        city = data.get("city","")
+        f.write(f"{lat}\n{lon}\n{city}")
         f.close()
-except Exception as e:
-    print(f"Failed to get location: {e}, continuing.")
-
-invalidCount = 0
-recognitionCount = 0
-alarmPath = "data/alarm/alarms.json"
-alarmDaemon = subprocess.Popen(["python","bin/alarmGoOff.py"])
-while True:
-    checkAlarms(path=alarmPath)
-    invalidCount += 1
-
-    if invalidCount >= 25:
-        alarmDaemon.kill()
-        alarmDaemon = subprocess.Popen(["python", "bin/alarmGoOff.py"])
-        invalidCount = 0
-
-    if invalidCount >= 5:
-        invalidCount = 0
-        os.system("cls" if platform.system() == "Windows" else "clear")
-
-    print("Detecting wake word...")
-    text = STTutils.recognizeText("VOSK", micIndex=None, timeout_chunks=15)
-    print(text)
-
-    wakeWords = ("hey piston", "hey assistant", "hey raspberry pi", "hi", "hey man","raspberry pi")
-
-    if not any(w in text for w in wakeWords):
-        continue
-
-    print("Wake word detected!")
-    STTutils.startSFX()
-
-    recognitionCount += 1
-    if recognitionCount >= 25:
-        recognitionCount = 0
+    print("Validating Alarms...")
+    validateAlarms()
+    print("Loading FasterWhisper...")
+    import FasterWhisper
+    invalidCount = 0
+    subprocess.Popen(["python","bin/alarmGoOff.py"])
+    FasterWhisper.startupSFX()
+    while True:
+        invalidCount += 1
+        if invalidCount > 15:
+            invalidCount = 0
+            subprocess.Popen(["python","bin/alarmGoOff.py"])
+        if invalidCount > 5:
+            validateAlarms()
+            invalidCount = 0
         try:
-            lat, lon, raw = utils.getLocation()
-            with open("data/tmp/locationCache.txt", "w") as f:
-                f.write(f"{lat}\n{lon}\n{raw['city']}")
-        except Exception as e:
-            print(f"Failed to refresh location: {e}")
-
-    emptyCount = 0
-
-    while emptyCount < 4:
-        try:
-            text = STTutils.recognizeText("VOSK")
-            print(f"Recognized: {text}")
-
-            if not text.strip():
-                emptyCount += 1
-                continue
-
-            emptyCount = 0  # reset on valid speech
-            reply = utils.main(uInput=text)
-            print(f"reply: {reply}")
-            TTSutils.speak(text=reply)
-
+            print("Detecting wake word...")
+            reply = FasterWhisper.listen_and_transcribe(device_index=1,wakewords=WAKE_WORDS,SILENCE_DURATION=1.5,SILENCE_THRESHOLD=350)
+            print(reply)
+            reply = removePunc(reply)
+            if any(WW in reply.lower() for WW in WAKE_WORDS):
+                print("Wake word detected!")
+                validCount = 0
+                recognitionPath = "data/tmp/recognition.txt"
+                with open("data/tmp/recognition.txt","w") as f:
+                    f.write("True")
+                    f.close()
+                while validCount < 5:
+                    print("Recognizing...")
+                    if not Path(recognitionPath).exists():
+                        with open(recognitionPath,"w") as f:
+                            f.write("True")
+                            continue
+                    else:
+                        with open(recognitionPath) as f:
+                            if f.read() != "True":
+                                break
+                    try:
+                        validCount += 1
+                        FasterWhisper.startSFX()
+                        reply = FasterWhisper.listen_and_transcribe(device_index=1,SILENCE_DURATION=2.7,SILENCE_THRESHOLD=350)
+                        print(reply)
+                        FasterWhisper.stopSFX()
+                        if not reply:
+                            continue
+                        else:
+                            response = utils.main(reply)
+                            TTS = response
+                            print(f"Reply: {TTS}")
+                        TTSutils.speak(TTS)
+                    except KeyboardInterrupt:
+                        FasterWhisper.stopSFX()
+                        break
+                    except Exception as e:
+                        FasterWhisper.errorSFX()
+                        print(e)
+                        break
+            elif reply == "abort":
+                print("Bye!")
+                break
         except KeyboardInterrupt:
-            STTutils.errorSFX()
-            print("Keyboard interrupt")
+            print("Keyboard Interrupt")
+            FasterWhisper.stopSFX()
             break
-
         except Exception as e:
-            STTutils.errorSFX()
+            FasterWhisper.errorSFX()
             print(e)
-
-    STTutils.stopSFX()
+            break

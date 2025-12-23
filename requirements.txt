@@ -5,3 +5,8 @@ edge-tts
 sounddevice
 geopy
 pydub
+PyAudio; sys_platform == "win32"
+pyaudioop-lts; sys_platform == "linux"
+onnxruntime
+faster-whisper
+numpy

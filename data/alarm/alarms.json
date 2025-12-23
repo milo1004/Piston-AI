@@ -1,24 +1,3 @@
 {
-    "alarms": [
-        {
-            "id": 202512211518,
-            "time": 900,
-            "repeat": [
-                "sat",
-                "sun"
-            ],
-            "label": "Wake up",
-            "enabled": true
-        },
-        {
-            "id": 202512211644,
-            "time": 2134,
-            "repeat": [
-                "sat",
-                "sun"
-            ],
-            "label": "Wake up",
-            "enabled": true
-        }
-    ]
+    "alarms":[]
 }

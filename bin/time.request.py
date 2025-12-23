@@ -1,5 +1,13 @@
 from datetime import datetime
+import sys,io
+# Save the original stdout
+original_stdout = sys.stdout
+sys.stdout = io.StringIO()  # Redirect stdout to a dummy buffer
+
 import libForBin
+
+# Restore stdout
+sys.stdout = original_stdout
 
 now = datetime.now()
 

@@ -13,12 +13,17 @@ def getAudioDuration(path:str="SFX/defaultAlarm.mp3"):
     return audio_file.duration_seconds # duration in seconds (float)
 
 
-def loadAlarms(path:str="data/alarm/alarms.json") -> dict:
+def loadAlarms(path:str="data/alarm/alarms.json") -> list:
     try:
         with open(path) as file:
             return json.load(file).get("alarms", [])
     except Exception:
-        return []
+        with open(path) as file:
+            alarms = json.load(file).get("alarms", [])
+            if alarms == []:
+                return []
+            else:
+                return []
 
 def alarmGoOff(label="Alarm",AlarmTone:str="SFX/defaultAlarm.mp3"):
     AlarmToneLength = getAudioDuration(AlarmTone)
@@ -26,20 +31,21 @@ def alarmGoOff(label="Alarm",AlarmTone:str="SFX/defaultAlarm.mp3"):
         TTS = ""
     else:
         TTS = label
-
+    timesToRepeat = 3
     if TTS:
-        libForBin.speak(TTS)
-        pygame.mixer.Sound(TTS).play()
-        sound = pygame.mixer.Sound(AlarmTone)
-        channel = sound.play()
-        while channel.get_busy():
-            time.sleep(1)
+        libForBin.speak(text=TTS)
+        for _ in range(timesToRepeat):
+            sound = pygame.mixer.Sound(AlarmTone)
+            channel = sound.play()
+            while channel.get_busy():
+                time.sleep(1)
     else:
-        sound = pygame.mixer.Sound(AlarmTone)
-        channel = sound.play()
-        while channel.get_busy():
-            time.sleep(1)
-        delay = max(0, 60 - AlarmToneLength)
+        for _ in range(timesToRepeat):
+            sound = pygame.mixer.Sound(AlarmTone)
+            channel = sound.play()
+            while channel.get_busy():
+                time.sleep(1)
+        delay = max((0, 60 - AlarmToneLength) * timesToRepeat)
         time.sleep(delay)
 
 if __name__ == "__main__":

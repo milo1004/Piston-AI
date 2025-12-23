@@ -1,87 +1,121 @@
-import json
 import sys
+import json
+import os
 from datetime import datetime
 from pathlib import Path
 from libForBin import askPiston
 
-DEFAULT_CONTENT = {"alarms": []}
+PATH = "data/alarm/alarms.json"
 
+DEFAULT_CONTENT = {
+    "alarms": []
+}
 
-def ensure_dest(path: str):
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
+# -------------------------
+# File safety
+# -------------------------
+def ensureFileSafety(filename: str = PATH) -> None:
+    parentDir = os.path.dirname(filename)
 
-    if not path.is_file():
-        path.write_text(json.dumps(DEFAULT_CONTENT, indent=4))
+    if parentDir and not Path(parentDir).exists():
+        os.makedirs(parentDir, exist_ok=True)
 
+    if not Path(filename).exists():
+        with open(filename, "w") as f:
+            json.dump(DEFAULT_CONTENT, f, indent=4)
+        return
 
-def load_alarms(path: str) -> dict:
     try:
-        with open(path, "r") as f:
+        with open(filename, "r") as f:
             data = json.load(f)
-            if isinstance(data, dict) and isinstance(data.get("alarms"), list):
-                return data
     except json.JSONDecodeError:
-        pass
+        data = DEFAULT_CONTENT
 
-    # Reset corrupted file
-    with open(path, "w") as f:
-        json.dump(DEFAULT_CONTENT, f, indent=4)
-    return DEFAULT_CONTENT
+    if not isinstance(data, dict) or "alarms" not in data or not isinstance(data["alarms"], list):
+        data = DEFAULT_CONTENT
+
+    with open(filename, "w") as f:
+        json.dump(data, f, indent=4)
 
 
-def add_alarm(
-    time: int,
-    label: str = "",
-    json_path: str = "data/alarm/alarms.json"
-) -> str:
+# -------------------------
+# Argument parsing
+# -------------------------
+def parseArgs(argv=sys.argv) -> tuple:
+    if len(argv) < 2:
+        return None, [], "Alarm"
 
-    ensure_dest(json_path)
-    alarms = load_alarms(json_path)
+    try:
+        raw = sys.argv[1]
+        raw = raw.encode("utf-8").decode("unicode_escape")
+        raw = raw[1:len(raw) - 1]
+        args = json.loads(raw)
+    except json.JSONDecodeError:
+        return None, [], "Alarm"
 
-    alarm_id = datetime.now().strftime("%Y%m%d%H%M%S")
+    argTime = args.get("time")
+    argRepeat = args.get("repeat", [])
+    argLabel = args.get("label", "Alarm")
 
-    alarm = {
-        "id": alarm_id,
-        "time": time,
-        "label": label,
-        "enabled": True
+    if not isinstance(argRepeat, list):
+        argRepeat = []
+
+    argTime = str(argTime) if argTime is not None else None
+
+    # normalize time (e.g. "800" -> "0800")
+    if argTime and argTime.isdigit():
+        argTime = argTime.zfill(4)
+
+    return argTime, argRepeat, argLabel
+
+
+# -------------------------
+# Save alarm
+# -------------------------
+def saveAlarm(argTime, argRepeat, argLabel, filename: str = PATH) -> str:
+    if not argTime:
+        return "Time not specified"
+
+    alarmID = datetime.now().strftime("%Y%m%d%H%M%S")
+    weekday = datetime.now().strftime("%a").lower()
+
+    enabled = True if not argRepeat or weekday in argRepeat else False
+
+    payload = {
+        "id": alarmID,
+        "time": argTime,
+        "repeat": argRepeat,
+        "label": argLabel or "Alarm",
+        "enabled": enabled
     }
 
-    alarms["alarms"].append(alarm)
+    with open(filename, "r") as f:
+        data = json.load(f)
 
-    with open(json_path, "w") as f:
-        json.dump(alarms, f, indent=4)
+    data["alarms"].append(payload)
 
-    return alarm_id
+    with open(filename, "w") as f:
+        json.dump(data, f, indent=4)
+
+    return "Success"
 
 
-# -------- CLI ENTRY --------
-
+# -------------------------
+# Main
+# -------------------------
 if __name__ == "__main__":
-    # Expected args:
-    # python alarms.set.py <time> [label]
+    ensureFileSafety()
 
-    if len(sys.argv) < 2:
-        print("No time specified")
-        sys.exit(0)
+    argTime, argRepeat, argLabel = parseArgs(sys.argv)
+    result = saveAlarm(argTime, argRepeat, argLabel)
 
-    try:
-        time = int(sys.argv[1])
-    except ValueError:
-        print("Invalid time format")
-        sys.exit(0)
-
-    label = " ".join(sys.argv[2:]) if len(sys.argv) > 2 else ""
-
-    alarm_id = add_alarm(time=time, label=label)
-
-    reply, e = askPiston(
-        "Confirm in a natural and friendly way that an alarm was added. "
-        f"Time: {time}, Label: '{label}'"
-    )
-
-    if e:
-        print("Alarm added.")
+    if result != "Success":
+        print(f"Error: {result}")
     else:
-        print(reply.get("reply"))
+        reply, e = askPiston(
+            f"Tell the user that you have created an alarm for {argTime} in a natural way."
+        )
+        if e:
+            print(f"Error: {e}")
+        else:
+            print(reply.get("reply"))

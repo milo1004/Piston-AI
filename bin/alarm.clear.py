@@ -1,5 +1,13 @@
 import json
+import sys, io
+# Save the original stdout
+original_stdout = sys.stdout
+sys.stdout = io.StringIO()  # Redirect stdout to a dummy buffer
+
 from libForBin import askPiston
+
+# Restore stdout
+sys.stdout = original_stdout
 from pathlib import Path
 import os
 

@@ -3,8 +3,9 @@ import json
 import sys
 from datetime import datetime
 from pathlib import Path
-from libForBin import askPiston, getLocation
 from geopy.geocoders import Nominatim
+import io
+from libForBin import askPiston
 
 # ======================
 # Helpers

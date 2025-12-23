@@ -1,4 +1,3 @@
 venv
-VOSK
-WakeVOSK
 __pycache__
+.idea

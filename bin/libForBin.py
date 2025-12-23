@@ -1,6 +1,10 @@
 import os
 import asyncio
 import time
+import warnings
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+warnings.filterwarnings("ignore", category=UserWarning, module='pygame.pkgdata')
+
 
 try:
     import pygame
@@ -57,26 +61,6 @@ def askPiston(message: str, workerURL: str = WORKER_URL):
 
     except Exception as e:
         return None, e
-
-
-def executeMessage(message: str):
-    cmdPrefix = message.split(" ")[0]
-    args = message.split()[1:]
-    executablePath = os.path.join(os.getcwd(), "bin", f"{cmdPrefix}.py")
-
-    if Path(executablePath).exists():
-        proc = subprocess.run(
-            ["python", executablePath, *args],
-            capture_output=True,
-            text=True
-        )
-
-        if proc.returncode != 0:
-            return f"[Command error]\n{proc.stderr.strip()}"
-
-        return proc.stdout.strip()
-
-    return message
 
 def getLocation():
     data = requests.get("https://ipinfo.io/json").json()
