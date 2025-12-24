@@ -1,3 +1,11 @@
 {
-    "alarms":[]
+    "alarms": [
+        {
+            "id": "20251223201208",
+            "time": "1722",
+            "repeat": [],
+            "label": "Wake up!",
+            "enabled": true
+        }
+    ]
 }

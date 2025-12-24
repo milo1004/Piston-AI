@@ -3,6 +3,8 @@ from pathlib import Path
 from datetime import datetime
 import string
 import psutil
+import TFutils
+import time
 
 WAKE_WORDS = [
     "hey raspberry pi",
@@ -42,13 +44,18 @@ def validateAlarms(path:str="data/alarm/alarms.json"):
             alarm["enabled"] = False
             alarm["repeat"] = []
 
-def clearCache(cachePath:str="data/tmp"):
+def clearCache(cachePath:str="data/tmp") -> None:
+    if not Path(cachePath).exists:
+        os.mkdir(cachePath)
+        return None
     shutil.rmtree(cachePath)
     os.mkdir(cachePath)
+    return None
 
 if __name__ == "__main__":
+    print("\n\033[1mWelcome to Piston AI!\033[0m")
     if not psutil.sensors_battery().power_plugged:
-        print("\n\033[1mI would recommend you to plug in you laptop since FasterWhisper is demanding.\033[0m\n")
+        print("\nI would recommend you to plug in you laptop since FasterWhisper is demanding.")
     print("Clear Cache...")
     clearCache()
     print("Getting location...")
@@ -62,66 +69,42 @@ if __name__ == "__main__":
     print("Loading FasterWhisper...")
     import FasterWhisper
     invalidCount = 0
-    subprocess.Popen(["python","bin/alarmGoOff.py"])
+    proc = subprocess.Popen(["python","bin/alarmGoOff.py"])
     FasterWhisper.startupSFX()
+    invalidCount = 0
     while True:
-        invalidCount += 1
-        if invalidCount > 15:
-            invalidCount = 0
-            subprocess.Popen(["python","bin/alarmGoOff.py"])
         if invalidCount > 5:
             validateAlarms()
-            invalidCount = 0
-        try:
-            print("Detecting wake word...")
-            reply = FasterWhisper.listen_and_transcribe(device_index=1,wakewords=WAKE_WORDS,SILENCE_DURATION=1.5,SILENCE_THRESHOLD=350)
-            print(reply)
-            reply = removePunc(reply)
-            if any(WW in reply.lower() for WW in WAKE_WORDS):
-                print("Wake word detected!")
-                validCount = 0
-                recognitionPath = "data/tmp/recognition.txt"
-                with open("data/tmp/recognition.txt","w") as f:
-                    f.write("True")
-                    f.close()
-                while validCount < 5:
-                    print("Recognizing...")
-                    if not Path(recognitionPath).exists():
-                        with open(recognitionPath,"w") as f:
-                            f.write("True")
-                            continue
-                    else:
-                        with open(recognitionPath) as f:
-                            if f.read() != "True":
-                                break
-                    try:
-                        validCount += 1
-                        FasterWhisper.startSFX()
-                        reply = FasterWhisper.listen_and_transcribe(device_index=1,SILENCE_DURATION=2.7,SILENCE_THRESHOLD=350)
-                        print(reply)
-                        FasterWhisper.stopSFX()
-                        if not reply:
-                            continue
-                        else:
-                            response = utils.main(reply)
-                            TTS = response
-                            print(f"Reply: {TTS}")
-                        TTSutils.speak(TTS)
-                    except KeyboardInterrupt:
-                        FasterWhisper.stopSFX()
-                        break
-                    except Exception as e:
-                        FasterWhisper.errorSFX()
-                        print(e)
-                        break
-            elif reply == "abort":
-                print("Bye!")
+        if invalidCount > 15:
+            proc.kill()
+            proc = subprocess.Popen(["python", "bin/alarmGoOff.py"])
+        TFutils.ListenForWW(modelPath="data/openwakeword/wakeword.tflite",threshold=0.75)
+        validCount = 0
+        reply = ""
+        while validCount < 3:
+            validCount += 1
+            print("Recognizing...")
+            FasterWhisper.startSFX()
+            try:
+                text = FasterWhisper.listen_and_transcribe(1,SILENCE_THRESHOLD=375,SILENCE_DURATION=3.3)
+                print(text)
+            except KeyboardInterrupt:
+                print("Keyboard interrupt.")
                 break
-        except KeyboardInterrupt:
-            print("Keyboard Interrupt")
-            FasterWhisper.stopSFX()
-            break
-        except Exception as e:
-            FasterWhisper.errorSFX()
-            print(e)
-            break
+            except Exception as e:
+                FasterWhisper.errorSFX()
+                reply = f"Error: {e}"
+                break
+            if text:
+                validCount -= 1
+                reply = utils.main(text)
+                print(reply)
+                if reply:
+                    TTSutils.speak(reply)
+                else:
+                    pass
+            else:
+                validCount = 1
+                reply = ""
+        time.sleep(0.5)
+        continue # Clearner, just in case

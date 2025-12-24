@@ -31,7 +31,7 @@ def alarmGoOff(label="Alarm",AlarmTone:str="SFX/defaultAlarm.mp3"):
         TTS = ""
     else:
         TTS = label
-    timesToRepeat = 3
+    timesToRepeat = 2
     if TTS:
         libForBin.speak(text=TTS)
         for _ in range(timesToRepeat):
@@ -44,9 +44,7 @@ def alarmGoOff(label="Alarm",AlarmTone:str="SFX/defaultAlarm.mp3"):
             sound = pygame.mixer.Sound(AlarmTone)
             channel = sound.play()
             while channel.get_busy():
-                time.sleep(1)
-        delay = max((0, 60 - AlarmToneLength) * timesToRepeat)
-        time.sleep(delay)
+                time.sleep(0.3)
 
 if __name__ == "__main__":
     fired = set()
@@ -59,6 +57,7 @@ if __name__ == "__main__":
             alarmTime = alarm.get("time")
             enabled = alarm.get("enabled")
             if enabled and currentTime == str(alarmTime).zfill(4):
-                fired.add(key)
                 alarmGoOff(label=label)
-        time.sleep(1) # CPU brun prevention
+            nowSec = int(datetime.now().strftime("%S"))
+            delay = 60 - nowSec
+            time.sleep(delay)
