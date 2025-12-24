@@ -30,7 +30,7 @@ It's basically a voiced AI assistant, just like Alexa, HomePod Siri, and more!
 
 ---
 
-## 🛠️ How to setup
+## 🛠️ How to setup (macOS coming soon!)
 
 ### 🪟 Windows:
 1. Install Python 3 from (here)[python.org]
