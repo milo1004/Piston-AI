@@ -33,7 +33,7 @@ It's basically a voiced AI assistant, just like Alexa, HomePod Siri, and more!
 ## 🛠️ How to setup (macOS coming soon!)
 
 ### 🪟 Windows:
-1. Install Python 3 from [here](python.org)
+1. Install Python 3 from [here](https://python.org/)
 2. Clone the source code:
    ```
    git clone --depth=1 https://github.com/milo1004/Piston-AI.git
