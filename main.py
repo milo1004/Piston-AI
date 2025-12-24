@@ -67,7 +67,10 @@ if __name__ == "__main__":
     print("Validating Alarms...")
     validateAlarms()
     print("Loading FasterWhisper...")
-    os.system("clear")
+    if platform.system() == "Windows":
+        os.system("cls")
+    elif platform.system() is ("Linux","Darwin"):
+        os.system("clear")
     import FasterWhisper
     invalidCount = 0
     proc = subprocess.Popen(["python","bin/alarmGoOff.py"])
