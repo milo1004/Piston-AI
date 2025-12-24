@@ -65,5 +65,4 @@ It's basically a voiced AI assistant, just like Alexa, HomePod Siri, and more!
 6. Run Piston AI:
    ```
    python main.py
-
 Enjoy!!🔥
