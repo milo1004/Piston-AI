@@ -67,6 +67,7 @@ if __name__ == "__main__":
     print("Validating Alarms...")
     validateAlarms()
     print("Loading FasterWhisper...")
+    os.system("clear")
     import FasterWhisper
     invalidCount = 0
     proc = subprocess.Popen(["python","bin/alarmGoOff.py"])
