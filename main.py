@@ -69,7 +69,7 @@ if __name__ == "__main__":
     print("Loading FasterWhisper...")
     if platform.system() == "Windows":
         os.system("cls")
-    elif platform.system() is ("Linux","Darwin"):
+    elif platform.system() in ("Linux","Darwin"):
         os.system("clear")
     import FasterWhisper
     invalidCount = 0
