@@ -1,3 +1,28 @@
 {
-  "history": []
+    "history": [
+        {
+            "role": "user",
+            "content": "Remember my locker code is 1234"
+        },
+        {
+            "role": "assistant",
+            "content": "Error: Traceback (most recent call last):\n  File \"C:\\Users\\miloc\\Downloads\\Piston\\Piston AI\\bin\\memory.add.py\", line 50, in <module>\n    addMemory(text=\" \".join(args))\n    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\miloc\\Downloads\\Piston\\Piston AI\\bin\\memory.add.py\", line 44, in addMemory\n    data[\"memories\"].append(payload)\n    ^^^^\nUnboundLocalError: cannot access local variable 'data' where it is not associated with a value\n"
+        },
+        {
+            "role": "user",
+            "content": "Try again: Remember that my locker keys are in my wallet"
+        },
+        {
+            "role": "assistant",
+            "content": "{'reply': \"I've made a note of that for you. I've stored that your locker keys are in your wallet, so you can easily recall that info later if you need to.\"}\n"
+        },
+        {
+            "role": "user",
+            "content": "Thank you Piston"
+        },
+        {
+            "role": "assistant",
+            "content": "You're welcome! I've got your locker keys stored safely in my memory. If you need to recall that info anytime, just ask!"
+        }
+    ]
 }
