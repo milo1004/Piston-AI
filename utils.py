@@ -19,6 +19,7 @@ except (ImportError, ModuleNotFoundError):
     from tinydb import TinyDB, Query
 import subprocess
 from pathlib import Path
+import json
 
 # Optional: enable command-line editing
 try:
@@ -29,18 +30,38 @@ except ImportError:  # Windows fallback
 
 WORKER_URL = "https://piston-ai.chanyanyan3205.workers.dev"
 HISTORY_FILE = "history.json"
+MEMORY_FILE = "data/memory/memories.json"
 
-def askPiston(message: str, workerURL: str = WORKER_URL):
+def askPiston(message: str, workerURL: str = WORKER_URL) -> tuple:
     try:
-        db = TinyDB(HISTORY_FILE)
-        raw = db.all()
-        history = [{"role": m["role"], "content": m["content"]} for m in raw]
+        with open(MEMORY_FILE, "r") as f:
+            memory = json.load(f)["memories"]
+            memories = [m["text"] for m in memory]
+            f.close()
     except Exception as e:
-        return None, e
+        print(e)
+        memories = []
+    try:
+        with open(HISTORY_FILE, "r") as f:
+            historyRaw = json.load(f)
+        if historyRaw == {}:
+            history = []
+        else:
+            history = historyRaw["history"]
+    except Exception as e:
+        history = []
+    system_memory = ""
+    if memories:
+        system_memory = (
+                "You have access to the following long-term memories. "
+                "They are factual and must be used when relevant:\n"
+                + "\n".join(f"- {m}" for m in memories)
+                + "\n"
+        )
 
     payload = {
         "history": history,
-        "prompt": message
+        "prompt": system_memory + message
     }
 
     try:
@@ -49,7 +70,6 @@ def askPiston(message: str, workerURL: str = WORKER_URL):
         if r.status_code != 200:
             return None, f"{r.status_code}: {r.reason}"
         with open("data/tmp/response.txt", "w") as f:
-            import json
             json.dump(r.json(), f, indent=4)
         return r.json(), None
 
@@ -58,15 +78,30 @@ def askPiston(message: str, workerURL: str = WORKER_URL):
 
 
 def saveHistory(historyFile: str = HISTORY_FILE, role: str = None, message: str = None):
-    db = TinyDB(historyFile)
-    db.insert({
+    DEFAULT_CONTENT = {
+        "history":[]
+    }
+    parentDir = os.path.dirname(historyFile)
+    if not Path(parentDir).exists():
+        os.makedirs(parentDir)
+        with open(historyFile, "w") as f:
+            json.dump(DEFAULT_CONTENT, f, indent=4)
+    elif not Path(historyFile).exists():
+        with open(historyFile, "w") as f:
+            json.dump(DEFAULT_CONTENT, f, indent=4)
+    payload = {
         "role": role,
         "content": message
-    })
+    }
 
+    with open(historyFile, "r") as f:
+        history = json.load(f)
+        f.close()
+    history["history"].append(payload)
+    with open(historyFile, "w") as f:
+        json.dump(history, f, indent=4)
 
 def executeMessage(message:str):
-    import platform
     executable = f"bin/{message.split()[0]}.py"
     arg = message.split()[1:]
     args = []

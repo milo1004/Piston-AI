@@ -12,6 +12,8 @@ import tensorflow as tf
 import platform
 import sys
 
+import time
+
 # =====================
 # CONFIG
 # =====================
@@ -19,7 +21,7 @@ RATE = 16000
 CHANNELS = 1
 FORMAT = pyaudio.paInt16
 CHUNK = 1024
-RECORDINGS = 5
+RECORDINGS = 6
 
 POS_DIR = "data/openwakeword/positive"
 NEG_DIR = "data/openwakeword/negative"
@@ -119,6 +121,15 @@ if __name__ == "__main__":
     shutil.rmtree(FEATURE_DIR, ignore_errors=True)
     os.makedirs(FEATURE_DIR)
 
+    if platform.system() == "Windows":
+        os.system("cls")
+    else:
+        os.system("clear")
+
+    print("Now, let's train the wakeword model (VERY IMPORTANT)!")
+    time.sleep(1)
+    print("Remember, as long as this emoji 🔴 doesn't show up, don't start saying!")
+
     # ---- Record positives ----
     for i in range(1, RECORDINGS + 1):
         print(f"\n🎤 Sample {i}/{RECORDINGS}")
@@ -181,6 +192,11 @@ if __name__ == "__main__":
 
     with open(TFLITE_PATH, "wb") as f:
         f.write(tflite_model)
+
+    if platform.system() == "Windows":
+        os.system("cls")
+    else:
+        os.system("clear")
 
     print("\n✅ Wakeword model exported!")
     print("Model path:", TFLITE_PATH)

@@ -1,20 +1,17 @@
-import sys, io
-# Save the original stdout
-original_stdout = sys.stdout
-sys.stdout = io.StringIO()  # Redirect stdout to a dummy buffer
-
+import json
 from libForBin import askPiston
 
-# Restore stdout
-sys.stdout = original_stdout
-reply, error = askPiston("Say \"Chat cleared\" in a natural way")
+def clearChat(filePath:str="history.json"):
+    DEFAULT_CONTENT = {
+        "history": []
+    }
+    with open(filePath, "w") as f:
+        json.dump(DEFAULT_CONTENT, f, indent=4)
 
-if error:
-    print(f"error: {error}")
-else:
-    print(reply.get("reply",""))
-
-with open("history.json","w") as f:
-    f.write("")
-    f.close()
-
+if __name__ == "__main__":
+    reply, e = askPiston("Tell the user that you have cleared the chat history in a natural way.")
+    if e:
+        print(f"Error: {e}")
+    else:
+        print(reply.get("reply",""))
+    clearChat()

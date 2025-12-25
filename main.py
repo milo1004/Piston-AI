@@ -66,6 +66,10 @@ if __name__ == "__main__":
         f.close()
     print("Validating Alarms...")
     validateAlarms()
+    if platform.system() == "Windows":
+        os.system("cls")
+    elif platform.system() in ("Linux","Darwin"):
+        os.system("clear")
     print("Loading FasterWhisper...")
     import FasterWhisper
     invalidCount = 0
@@ -78,7 +82,7 @@ if __name__ == "__main__":
         if invalidCount > 15:
             proc.kill()
             proc = subprocess.Popen(["python", "bin/alarmGoOff.py"])
-        TFutils.ListenForWW(modelPath="data/openwakeword/wakeword.tflite",threshold=0.75)
+        TFutils.ListenForWW(modelPath="data/openwakeword/wakeword.tflite",threshold=0.7)
         validCount = 0
         reply = ""
         while validCount < 3:
