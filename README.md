@@ -15,7 +15,7 @@ It's basically a voiced AI assistant, just like Alexa, HomePod Siri, and more!
 - 🧠 **LLM backend via Workers AI**
 - 🧩 Modular Python structure (easy to extend)
 - 🖥️ Runs fully in the terminal
-- 🐧 Cross-platform (Linux / macOS / Windows)
+- 🐧 Cross-platform -- Now supports Windows and Linux (macOS is experimental)
 
 ---
 
