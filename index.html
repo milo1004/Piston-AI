@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <style>
+            @font-face {
+                font-family: "RobotoMono";
+                src: url("RobotoMono.ttf") format("truetype");
+            }
+            body {
+                display: flex;
+                flex-direction: column;
+                font-family: "RobotoMono";
+                background-color: white;
+                align-items: center;
+            }
+
+            .container-hor {
+                display: flex;
+                justify-content: center;
+                flex-direction: row;
+                font-family: "RobotoMono";
+                width: 100%;
+            }
+
+            .container-vert {
+                display: flex;
+                justify-content: center;
+                flex-direction: column;
+                font-family: "RobotoMono";
+                padding: 4px;
+            }
+
+            .input-class {
+                bottom: 0;
+                width:50%;
+                border: 2px solid gray;
+                border-radius: 15px;
+                background-color: white;
+                height: 35px;
+                padding: 2px 2px;
+            }
+
+            hr {
+                width: 100%;
+                border: none;
+                border-top: 2px solid gray;
+            }
+
+            .user-message {
+                border: none;
+                border-radius: 10px;
+                font-family: "RoboMono";
+                background-color: #00bbff
+            }
+
+            .response-message {
+                border: none;
+                background-color: white;
+                font-family: "RoboMono";
+            }
+
+            .message {
+                width: 100%;
+                padding: 12px;
+                margin-bottom: 30px;
+            }
+
+            .send-button {
+                border: 1px solid white;
+                border-radius: 5px;
+                background-color: #00bbff;
+            }
+        </style>
+        <title>Piston AI</title>
+    </head>
+    <body>
+        <div class="container-hor">
+            <h2>
+                Piston AI
+            </h2>
+            <img src="AI.png" style="cursor: pointer;" width="58.25" height="67.5" onclick="redirectNewTab('https://github.com/milo1004/Piston-AI')">
+        </div>
+        <hr>
+        <div id="messages" class="container-vert" style="padding: 50% 3px;">
+
+        </div>
+        <hr>
+        <div style="position: fixed; padding: 7.5px; bottom: 0; display: flex; justify-content: center; font-family: "RobotoMono">
+            <input class="input-class" style="margin-bottom: 10px; margin-right: 5px;" placeholder="Ask Piston AI">
+            <input type="button" class="send-button" style="margin-bottom: 10px; height:35px; width:35px" value="⬆">
+        </div>
+        <script>
+            function redirectNewTab(url="example.com") {
+                window.open(url, "_blank");
+            }
+
+            function askPiston(message="Blud") {
+                fetch(
+                    '/submit', {
+                        method: 'POST',
+                    }
+                )
+            }
+        </script>
+    </body>
+</html>
