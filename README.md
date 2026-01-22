@@ -5,7 +5,9 @@
 **Piston AI** is an open-source, **browser-based voice AI assistant** powered by **Cloudflare Workers AI**.  
 It focuses on **low-latency speech interaction**, **simplicity**, and **no client-side API keys**.
 
-Think of it as a lightweight, hackable voice assistant — inspired by Alexa / Siri — but built for the web.
+A lightweight, voice assistant — inspired by Alexa / Siri — but built like a standby agent.
+
+### Visit the site: https://pistonai.pages.dev/
 
 ---
 
