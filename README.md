@@ -47,6 +47,8 @@ To download it:
 ```bash
     git clone https://github.com/milo1004/Piston-AI.git
 ```
+*I'd recommend you to open index.html with Live Server of VSCode, since backend would block some weather, location and Workers AI requests.*
+
 **Note**: The backend runs on **Cloudflare Workers AI** and does **not require client-side API keys**.
 
 Enjoy!

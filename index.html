@@ -439,8 +439,8 @@
                     }
                     pistonResEl.textContent = response.reply;
                     positionAIBox();
-                    SRHintEl.visibility = "hidden";
                     SRHintTxtEl.textContent = "Press to start recognition";
+                    SRHintEl.style.visibility = "hidden";
                     SRBtnEl.addEventListener("mouseout", removeHint);
                 }
 
