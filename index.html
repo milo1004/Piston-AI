@@ -648,6 +648,7 @@
                     getLocation();
                     setInterval(getLocation, 3600000);
                     let userName = localStorage.getItem("username");
+                    requestMic();
                     if (!userName) {
                         showSetup();
                         return;
@@ -655,7 +656,6 @@
                         const greetingEl = document.getElementById("greeting");
                         greetingEl.textContent = `Welcome back, ${userName}!`;
                     }
-                    requestMic();
                 }
 
                 function showSetup() {
