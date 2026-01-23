@@ -149,12 +149,47 @@
                     display: flex;
                     justify-content: center;
                     align-items: center;
-                    transition: background-color 0.2s ease;
+                    transition: 
+                        background-color 0.2s ease,
+                        opacity 0.2s ease;
+                }
+
+                #sendBtn {
+                    border: 2px solid gray;
+                    border-radius: 10em;
+                    position: absolute;
+                    bottom: 10px;
+                    height: 40px;
+                    width: 40px;
+                    background-size: cover;
+                    background-color: #000000;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    transition: 
+                        background-color 0.2s ease,
+                        opacity 0.2s ease;
+                    z-index: 7;
+                }
+
+                #sendBtn:hover {
+                    cursor: pointer;
+                    background-color: gray;
+                }
+
+                #sendBtn:disabled {
+                    cursor: not-allowed;
+                    opacity: 20%;
                 }
 
                 .startSTT:hover {
                     cursor: pointer;
                     background-color: gray;
+                }
+
+                .startSTT:disabled {
+                    cursor: not-allowed;
+                    opacity: 20%;
                 }
 
                 #speechRecDiv {
@@ -198,6 +233,7 @@
                     justify-content: center;
                     align-items: center;
                     overflow-y: auto;
+                    z-index: 5;
                     width: 45%;
                     height: 50%;
                     background-color: black;
@@ -209,6 +245,20 @@
                 #AIbox:hover {
                     cursor: pointer;
                     background-color: gray;
+                }
+
+                #manIn {
+                    border: 2px solid gray;
+                    border-radius: 10em;
+                    position: absolute;
+                    bottom: 10px;
+                    width: 25em;
+                    height: 50px;
+                    padding-left: 10px;
+                    color: black;
+                    z-index: 6;
+                    box-sizing: border-box;
+
                 }
             </style>
         </head>
@@ -252,6 +302,10 @@
                 <button class="startSTT" id="startSTT" onclick="">
                     <img id="startSTTImg" src="src/STT.png" style="height: 80%;" draggable="false">
                 </button>
+                <input id="manIn" placeholder="Ask Piston AI">
+                <button class="startSTT" id="sendBtn">
+                    <img id="sendBtnImg" src="src/send.png" style="height: 80%;" draggable="false">
+                </button> 
             </div>
             <div id="AIbox">
                 <p id="user-input">
@@ -270,6 +324,37 @@
                 let AIboxout = true;
                 const AIboxElTemp = document.getElementById("AIbox");
                 AIboxElTemp.onclick = modAIBox;
+
+                function positionManIn() {
+                    const manInEl = document.getElementById("manIn");
+                    const sendBtnEl = document.getElementById("sendBtn");
+                    const startSTTEl = document.getElementById("startSTT");
+
+                    manInEl.style.left = startSTTEl.offsetLeft - 5 - manInEl.offsetWidth + 'px';
+                    manInEl.style.bottom = 10 + 'px';
+                    sendBtnEl.style.left = startSTTEl.offsetLeft - 5 - sendBtnEl.offsetWidth - 8 + 'px';
+                    const rel_borders = (manInEl.offsetHeight - sendBtnEl.offsetHeight) / 2;
+                    sendBtnEl.style.top = manInEl.offsetTop + rel_borders + 'px';
+                    manInEl.style.paddingRight = 8 + sendBtnEl.offsetWidth + 5 + 'px';
+                    manInEl.style.width = parseFloat(getComputedStyle(manInEl).fontSize) * 25 - parseFloat(manInEl.style.paddingRght) + 'px';
+                    if (manInEl.value === "") {
+                        sendBtnEl.disabled = true;
+                        startSTTEl.disabled = false;
+                    } else if (manInEl.value !== "") {
+                        sendBtnEl.disabled = false;
+                        startSTTEl.disabled = true;
+                    }
+
+                    manInEl.addEventListener("input", (e) => {
+                        if (manInEl.value === "") {
+                            sendBtnEl.disabled = true;
+                            startSTTEl.disabled = false;
+                        } else if (manInEl.value !== "") {
+                            sendBtnEl.disabled = false;
+                            startSTTEl.disabled = true;
+                        }
+                    });
+                }
 
                 function modAIBox() {
                     const weatherEl = document.getElementById("weather");
@@ -467,6 +552,8 @@
                     positionClock();
                     positionWeather();
                     positionHint();
+                    positionAIBox();
+                    positionManIn();
                 })
 
                 const setupInputEl = document.getElementById("setup-input");
@@ -511,6 +598,52 @@
                         stopRecordng();
                     }
                     
+                }
+
+                const sendBtnEl = document.getElementById("sendBtn");
+                sendBtnEl.onclick = () => {
+                    const manInEl = document.getElementById("manIn");
+                    response = askPiston(manInEl.value);
+                    manInEl.value = "";
+                }
+
+                async function askPiston(uInput) {
+                    const AIboxEl = document.getElementById("AIbox");
+                    const uInputEl = document.getElementById("user-input");
+                    const pistonResEl = document.getElementById("piston-res");
+                    positionAIBox();
+                    AIboxEl.style.visibility = "visible";
+                    uInputEl.textContent = "You: " + uInput;
+
+                    pistonResEl.textContent = "";
+                    let historyMsg = localStorage.getItem("history");
+                    if (!historyMsg) {
+                        historyMsg = [];
+                    } else {
+                        historyMsg = JSON.parse(historyMsg);
+                    }
+                    let memory = `You have access to the memory below: \n The user's name is ${localStorage.getItem("username")}`;
+                    const now = new Date();
+                    let AdditionalData = `Additional data: \nweather:${localStorage.getItem("temperature")}, ${localStorage.getItem("weatherCode")}\ndate (DD/MM/YYYY): ${now.getDate().toString().padStart(2,"0")}/${now.getMonth().toString().padStart(2,"0")}/${now.getFullYear}\ntime (hour:minute): ${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
+                    const result = await fetch("https://piston-ai.chanyanyan3205.workers.dev", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type":"application/json"
+                        },
+                        body: JSON.stringify({
+                            history: historyMsg,
+                            prompt: `${memory}\n\n${AdditionalData}\n\nUser input: ${uInput}`
+                        })
+                    });
+                    saveHistory(role="user", message=uInput);
+                    const response = await result.json();
+                    saveHistory(role="assistant", message=response.reply);
+                    if (response.reply === "chat.clear") {
+                        localStorage.setItem("history", "[]");
+                        response.reply = "Chat cleared! Let's start fresh";
+                    }
+                    pistonResEl.textContent = response.reply;
+                    positionAIBox();
                 }
 
                 function positionHint() {
@@ -646,6 +779,7 @@
                     positionClock();
                     positionWeather();
                     getLocation();
+                    positionManIn();
                     setInterval(getLocation, 3600000);
                     let userName = localStorage.getItem("username");
                     requestMic();
