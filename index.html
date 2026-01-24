@@ -223,7 +223,8 @@
                 #AIbox {
                     border: 1px solid gray;
                     border-radius: 20px;
-                    padding: 5px;
+                    padding-left: 5%;
+                    padding-right: 5%;
                     visibility: hidden;
                     display: flex;
                     flex-direction: column;
@@ -311,10 +312,10 @@
                 </button> 
             </div>
             <div id="AIbox">
-                <p id="user-input">
+                <p id="user-input" style="user-select: text; cursor: text">
                     You: 
                 </p>
-                <p id="piston-res" style="color:#a6ff01; margin-top: 5px;">
+                <p id="piston-res" style="color:#a6ff01; margin-top: 5px; user-select: text; cursor: text;">
                 </p>
             </div>
             <p class="credit" onclick="redirectToGitHub()">brought to you by Milo Chan</p>
