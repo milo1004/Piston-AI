@@ -788,12 +788,6 @@
                 }
 
                 function initApp() {
-                    positionHint();
-                    alignClock();
-                    positionClock();
-                    positionWeather();
-                    getLocation();
-                    positionManIn();
                     setInterval(getLocation, 3600000);
                     let userName = localStorage.getItem("username");
                     requestMic();
@@ -803,6 +797,12 @@
                     } else {
                         const greetingEl = document.getElementById("greeting");
                         greetingEl.textContent = `Welcome back, ${userName}!`;
+                        positionHint();
+                        alignClock();
+                        positionClock();
+                        positionWeather();
+                        getLocation();
+                        positionManIn();
                     }
                 }
 
@@ -832,8 +832,12 @@
                         setupEl.style.visibility = "hidden";
                         warningTxt.style.visibility = "hidden"
                         document.body.classList.remove("blur-active");
+                        positionHint();
+                        alignClock();
                         positionClock();
                         positionWeather();
+                        getLocation();
+                        positionManIn();
                         return;
                     }
                 }
