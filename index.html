@@ -258,7 +258,12 @@
                     color: black;
                     z-index: 6;
                     box-sizing: border-box;
+                    transition:
+                        opacity 0.2s ease;
+                }
 
+                #manIn:disabled {
+                    cursor: not-allowed;
                 }
             </style>
         </head>
@@ -326,6 +331,7 @@
                 AIboxElTemp.onclick = modAIBox;
 
                 function positionManIn() {
+
                     const manInEl = document.getElementById("manIn");
                     const sendBtnEl = document.getElementById("sendBtn");
                     const startSTTEl = document.getElementById("startSTT");
@@ -399,6 +405,33 @@
                     }
                 }
 
+                function modManIn(hide) {
+                    const manInEl = document.getElementById("manIn");
+                    const sendBtnEl = document.getElementById("sendBtn");
+                    if (hide) {
+                        manInEl.style.opacity = 0;
+                        sendBtnEl.style.opacity = 0;
+                        manInEl.disabled = true;
+                        setTimeout(() => {
+                            manInEl.style.visibility = "hidden";
+                            sendBtnEl.style.visibility = "hidden";
+                        }, 200);
+                    } else if (!hide) {
+                        manInEl.style.visibility = "visible";
+                        sendBtnEl.style.visibility = "visible";
+                        manInEl.style.opacity = 100;
+                        sendBtnEl.style.opacity = 100;
+                        manInEl.disabled = false;
+                        if (manInEl.value === "") {
+                            sendBtnEl.disabled = true;
+                            sendBtnEl.style.opacity = "20%";
+                        } else {
+                            sendBtnEl.disabled = false; 
+                            sendBtnEl.style.opacity = "100%";
+                        }
+                    }
+                }
+
                 async function startRecording() {
                     if (medRecorder?.state === "recording") {
                         console.log("Already recording");
@@ -407,6 +440,7 @@
                     } 
                     recordState = true;
                     modRecordBtn();
+                    modManIn(true);
                     SRBtnEl.removeEventListener("mouseout", removeHint);
                     const SRHintEl = document.getElementById("SRHint");
                     const SRHintTxtEl = document.getElementById("SRHintTxt");
@@ -465,6 +499,7 @@
                     recordState = false;
                     modRecordBtn();
                     medRecorder.stop();
+                    modManIn(false);
                     positionAIBox();
                     const SRHintEl = document.getElementById("SRHint");
                     const SRHintTxtEl = document.getElementById("SRHintTxt");
@@ -484,47 +519,7 @@
                     });
                     const data = await res.json();
                     SRHintTxtEl.textContent = "Asking Piston AI...";
-                    const AIboxEl = document.getElementById("AIbox");
-                    const uInputEl = document.getElementById("user-input");
-                    const pistonResEl = document.getElementById("piston-res");
-                    if (!data || data === 'undefined') {
-                        alert("No text could be heard.");
-                        return;
-                    }
-                    positionAIBox();
-                    console.log(data.text);
-                    AIboxEl.style.visibility = "visible";
-                    uInputEl.textContent = "You: " + data.text;
-
-                    pistonResEl.textContent = "";
-                    let historyMsg = localStorage.getItem("history");
-                    if (!historyMsg) {
-                        historyMsg = [];
-                    } else {
-                        historyMsg = JSON.parse(historyMsg);
-                    }
-                    let memory = `You have access to the memory below: \n The user's name is ${localStorage.getItem("username")}`;
-                    const now = new Date();
-                    let AdditionalData = `Additional data: \nweather:${localStorage.getItem("temperature")}, ${localStorage.getItem("weatherCode")}\ndate (DD/MM/YYYY): ${now.getDate().toString().padStart(2,"0")}/${now.getMonth().toString().padStart(2,"0")}/${now.getFullYear}\ntime (hour:minute): ${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
-                    const result = await fetch("https://piston-ai.chanyanyan3205.workers.dev", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type":"application/json"
-                        },
-                        body: JSON.stringify({
-                            history: historyMsg,
-                            prompt: `${memory}\n\n${AdditionalData}\n\nUser input: ${data.text}`
-                        })
-                    });
-                    saveHistory(role="user", message=data.text);
-                    const response = await result.json();
-                    saveHistory(role="assistant", message=response.reply);
-                    if (response.reply === "chat.clear") {
-                        localStorage.setItem("history", "[]");
-                        response.reply = "Chat cleared! Let's start fresh";
-                    }
-                    pistonResEl.textContent = response.reply;
-                    positionAIBox();
+                    const reponse = await askPiston(data.text);
                     SRHintTxtEl.textContent = "Press to start recognition";
                     SRHintEl.style.visibility = "hidden";
                     SRBtnEl.addEventListener("mouseout", removeHint);
@@ -541,6 +536,13 @@
                     }
                     previousMessage.push(payload);
                     localStorage.setItem("history", JSON.stringify(previousMessage));
+
+                    if (previousMessage.length > 50 * 2) {
+                        previousMessage.shift();
+                        previousMessage.shift();
+                        localStorage.setItem("history", JSON.stringify(previousMessage));
+                        return;
+                    }
                 }
 
                 function removeHint() {
@@ -603,47 +605,57 @@
                 const sendBtnEl = document.getElementById("sendBtn");
                 sendBtnEl.onclick = () => {
                     const manInEl = document.getElementById("manIn");
+                    const startSTTEl = document.getElementById("startSTT");
                     response = askPiston(manInEl.value);
                     manInEl.value = "";
+                    sendBtnEl.disabled = true;
+                    startSTTEl.disabled = false;
                 }
 
                 async function askPiston(uInput) {
                     const AIboxEl = document.getElementById("AIbox");
                     const uInputEl = document.getElementById("user-input");
                     const pistonResEl = document.getElementById("piston-res");
-                    positionAIBox();
-                    AIboxEl.style.visibility = "visible";
-                    uInputEl.textContent = "You: " + uInput;
+                    try {
+                        positionAIBox();
+                        AIboxEl.style.visibility = "visible";
+                        uInputEl.textContent = "You: " + uInput;
 
-                    pistonResEl.textContent = "";
-                    let historyMsg = localStorage.getItem("history");
-                    if (!historyMsg) {
-                        historyMsg = [];
-                    } else {
-                        historyMsg = JSON.parse(historyMsg);
+                        pistonResEl.textContent = "";
+                        let historyMsg = localStorage.getItem("history");
+                        if (!historyMsg) {
+                            historyMsg = [];
+                        } else {
+                            historyMsg = JSON.parse(historyMsg);
+                        }
+                        let memory = `You have access to the memory below: \n The user's name is ${localStorage.getItem("username")}`;
+                        const now = new Date();
+                        let AdditionalData = `Additional data: \nweather:${localStorage.getItem("temperature")}, ${localStorage.getItem("weatherCode")}\ndate (DD/MM/YYYY): ${now.getDate().toString().padStart(2,"0")}/${now.getMonth().toString().padStart(2,"0")}/${now.getFullYear}\ntime (hour:minute): ${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
+                        const result = await fetch("https://piston-ai.chanyanyan3205.workers.dev", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type":"application/json"
+                            },
+                            body: JSON.stringify({
+                                history: historyMsg,
+                                prompt: `${memory}\n\n${AdditionalData}\n\nUser input: ${uInput}`
+                            })
+                        });
+                        if (!result.ok) {
+                            throw `POST https://chanyanyan3205.cloudflare.com/ ${result.statusText}`;
+                        }
+                        saveHistory(role="user", message=uInput);
+                        const response = await result.json();
+                        saveHistory(role="assistant", message=response.reply);
+                        if (response.reply === "chat.clear") {
+                            localStorage.setItem("history", "[]");
+                            response.reply = "Chat cleared! Let's start fresh";
+                        }
+                        pistonResEl.textContent = response.reply;
+                        positionAIBox();
+                    } catch (e) {
+                        pistonResEl.textContent = `Error: ${e}`;
                     }
-                    let memory = `You have access to the memory below: \n The user's name is ${localStorage.getItem("username")}`;
-                    const now = new Date();
-                    let AdditionalData = `Additional data: \nweather:${localStorage.getItem("temperature")}, ${localStorage.getItem("weatherCode")}\ndate (DD/MM/YYYY): ${now.getDate().toString().padStart(2,"0")}/${now.getMonth().toString().padStart(2,"0")}/${now.getFullYear}\ntime (hour:minute): ${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
-                    const result = await fetch("https://piston-ai.chanyanyan3205.workers.dev", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type":"application/json"
-                        },
-                        body: JSON.stringify({
-                            history: historyMsg,
-                            prompt: `${memory}\n\n${AdditionalData}\n\nUser input: ${uInput}`
-                        })
-                    });
-                    saveHistory(role="user", message=uInput);
-                    const response = await result.json();
-                    saveHistory(role="assistant", message=response.reply);
-                    if (response.reply === "chat.clear") {
-                        localStorage.setItem("history", "[]");
-                        response.reply = "Chat cleared! Let's start fresh";
-                    }
-                    pistonResEl.textContent = response.reply;
-                    positionAIBox();
                 }
 
                 function positionHint() {
