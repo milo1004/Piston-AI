@@ -776,15 +776,6 @@
                     }
                 }
 
-                function alignStartSTTImg() {
-                    const startEl = getElementById("startSTTImg");
-                    const startSTTEl = getElementById("startSTT");
-
-                    const rect = startSTTEl.getBoundingClientRect();
-                    startEl.style.height = rect.height - 10 + 'px';
-                    startEl.style.width = rect.width - 10 + 'px';
-                }
-
                 function initApp() {
                     positionHint();
                     alignClock();
