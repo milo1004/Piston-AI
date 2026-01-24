@@ -318,7 +318,7 @@
                 <p id="piston-res" style="color:#a6ff01; margin-top: 5px; user-select: text; cursor: text;">
                 </p>
             </div>
-            <p class="credit" onclick="redirectToGitHub()">brought to you by Milo Chan</p>
+            <p class="credit" onclick="redirectToGitHub()">Brought to you by Milo Chan</p>
             <script>
                 const SRBtnEl = document.getElementById("startSTT");
                 let chunks = [];
@@ -328,6 +328,36 @@
                 let AIboxout = true;
                 const AIboxElTemp = document.getElementById("AIbox");
                 AIboxElTemp.onclick = modAIBox;
+
+                function handleInput() {
+                    const manInEl = document.getElementById("manIn");
+                    const sendBtnEl = document.getElementById("sendBtn");
+                    const startSTTEl = document.getElementById("startSTT");
+
+                    if (manInEl.value === "") {
+                        sendBtnEl.disabled = true;
+                        startSTTEl.disabed = false;
+                    } else if (manInEl.value.trim() !== "") {
+                        sendBtnEl.disabled = false;
+                        startSTTEl.disabled = true;
+                    }
+                }
+
+                function handleEnter(e) {
+                    const manInEl = document.getElementById("manIn");
+                    const sendBtnEl = document.getElementById("sendBtn");
+                    const startSTTEl = document.getElementById("startSTT")
+                    if (e.key == "Enter") {
+                        e.preventDefault();
+                        if (manInEl.value.trim !== "") {
+                            askPiston(manInEl.value);
+                            manInEl.value = "";
+                            sendBtnEl.disabled = true;
+                            startSTTEl.disabled = true;
+                            return;
+                        }
+                    }
+                }
 
                 function positionManIn() {
 
@@ -345,32 +375,16 @@
                     if (manInEl.value === "") {
                         sendBtnEl.disabled = true;
                         startSTTEl.disabled = false;
-                    } else if (manInEl.value !== "") {
+                    } else if (manInEl.value.trim() !== "") {
                         sendBtnEl.disabled = false;
                         startSTTEl.disabled = true;
                     }
 
-                    manInEl.addEventListener("input", (e) => {
-                        if (manInEl.value === "") {
-                            sendBtnEl.disabled = true;
-                            startSTTEl.disabled = false;
-                        } else if (manInEl.value !== "") {
-                            sendBtnEl.disabled = false;
-                            startSTTEl.disabled = true;
-                        }
-                    });
-
-                    manInEl.addEventListener("keydown", (e) => {
-                        if (e.key === "Enter") {
-                            e.preventDefault();
-                            const manInEl = document.getElementById("manIn");
-                            const startSTTEl = document.getElementById("startSTT");
-                            response = askPiston(manInEl.value);
-                            manInEl.value = "";
-                            sendBtnEl.disabled = true;
-                            startSTTEl.disabled = false;
-                        }
-                    })
+                    manInEl.removeEventListener("input", handleInput);
+                    manInEl.addEventListener("input", handleInput);
+                    
+                    manInEl.removeEventListener("keydown", handleEnter);
+                    manInEl.addEventListener("keydown", handleEnter);
                 }
 
                 function modAIBox() {
@@ -499,7 +513,7 @@
                     AIboxEl.style.left = (window.innerWidth - AIboxEl.offsetLeft) / 2;  
                 }
 
-                async function stopRecordng() {
+                async function stopRecording() {
                     if (!medRecorder || medRecorder.state !== "recording") {
                         recordState = false;
                         console.warn("No active recording to stop.");
@@ -608,7 +622,7 @@
                     if (recordState === false) {
                         startRecording();
                     } else {
-                        stopRecordng();
+                        stopRecording();
                     }
                     
                 }
