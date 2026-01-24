@@ -358,6 +358,18 @@
                             startSTTEl.disabled = true;
                         }
                     });
+
+                    manInEl.addEventListener("keydown", (e) => {
+                        if (e.key === "Enter") {
+                            e.preventDefault();
+                            const manInEl = document.getElementById("manIn");
+                            const startSTTEl = document.getElementById("startSTT");
+                            response = askPiston(manInEl.value);
+                            manInEl.value = "";
+                            sendBtnEl.disabled = true;
+                            startSTTEl.disabled = false;
+                        }
+                    })
                 }
 
                 function modAIBox() {
