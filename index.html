@@ -168,6 +168,7 @@
                         background-color 0.2s ease,
                         opacity 0.2s ease;
                     z-index: 7;
+                    opacity: 100%;
                 }
 
                 #sendBtn:hover {
@@ -188,6 +189,30 @@
                 .startSTT:disabled {
                     cursor: not-allowed;
                     opacity: 20%;
+                }
+
+                .abortSTT {
+                    border: 2px solid gray;
+                    border-radius: 10em;
+                    position: absolute;
+                    bottom: 10px;
+                    right: 10px;
+                    height: 45px;
+                    width: 45px;
+                    background-size: cover;
+                    background-color: #000000;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    transition: 
+                        background-color 0.2s ease,
+                        opacity 0.2s ease;
+                    visibility: hidden;
+                }
+
+                .abortSTT:hover {
+                    background-color: gray;
+                    cursor: pointer;
                 }
 
                 #speechRecDiv {
@@ -310,6 +335,9 @@
                 <button class="startSTT" id="sendBtn">
                     <img id="sendBtnImg" src="src/send.png" style="height: 80%;" draggable="false">
                 </button> 
+                <button id="abortSTT" class="abortSTT">
+                    <img src="src/abort.png" draggable="false" style="height: 80%">
+                </button>
             </div>
             <div id="AIbox">
                 <p id="user-input" style="user-select: text; cursor: text">
@@ -334,12 +362,16 @@
                     const sendBtnEl = document.getElementById("sendBtn");
                     const startSTTEl = document.getElementById("startSTT");
 
-                    if (manInEl.value === "") {
+                    if (manInEl.value.trim() === "") {
                         sendBtnEl.disabled = true;
-                        startSTTEl.disabed = false;
+                        sendBtnEl.style.opacity = "20%";
+                        startSTTEl.disabled = false;
+                        startSTTEl.style.opacity = "100%";
                     } else if (manInEl.value.trim() !== "") {
                         sendBtnEl.disabled = false;
+                        sendBtnEl.style.opacity = "100%";
                         startSTTEl.disabled = true;
+                        startSTTEl.style.opacity = "20%";
                     }
                 }
 
@@ -349,11 +381,11 @@
                     const startSTTEl = document.getElementById("startSTT")
                     if (e.key == "Enter") {
                         e.preventDefault();
-                        if (manInEl.value.trim !== "") {
+                        if (manInEl.value.trim() !== "") {
                             askPiston(manInEl.value);
                             manInEl.value = "";
                             sendBtnEl.disabled = true;
-                            startSTTEl.disabled = true;
+                            startSTTEl.disabled = false;
                             return;
                         }
                     }
@@ -457,6 +489,34 @@
                     }
                 }
 
+                function showAbort() {
+                    const abortSTTEl = document.getElementById("abortSTT");
+                    const startSTTEl = document.getElementById("startSTT");;
+
+                    abortSTTEl.style.visibility = "visible";
+                    const target_x = -5 - abortSTTEl.offsetWidth + 'px';
+
+                    abortSTTEl.style.transform = `translate(${target_x}, 0)`;
+                    setTimeout(() => {}, 200);
+                    abortSTTEl.style.opacity = "100%";
+                    abortSTTEl.disabled = false;
+
+                    abortSTTEl.onclick = stopSTT;
+                }
+
+                function hideAbort() {
+                    const abortSTTEl = document.getElementById("abortSTT");
+                    const startSTTEl = document.getElementById("startSTT");;
+
+                    abortSTTEl.style.opacity = "100%";
+
+                    const target_x = startSTTEl.offsetLeft - abortSTTEl.offsetLeft + 'px';
+
+                    abortSTTEl.style.transform = `translate(${target_x}, 0)`;
+                    abortSTTEl.style.visibility = "hidden";
+                    abortSTTEl.style.disabled = true;
+                }
+
                 async function startRecording() {
                     if (medRecorder?.state === "recording") {
                         console.log("Already recording");
@@ -468,7 +528,8 @@
                     SRBtnEl.removeEventListener("mouseout", removeHint);
                     const SRHintEl = document.getElementById("SRHint");
                     const SRHintTxtEl = document.getElementById("SRHintTxt");
-                    SRHintEl.visibility = "visible";
+                    SRHintEl.style.visibility = "visible";
+                    showAbort();
                     SRHintTxtEl.textContent = "Listening...";
                     try {
                         medRecorder = new MediaRecorder(stream, {
@@ -530,7 +591,8 @@
                     const SRHintTxtEl = document.getElementById("SRHintTxt");
                     AIboxout = false;
                     modAIBox();
-                    SRHintEl.visibility = "visible";
+                    SRHintEl.style.visibility = "visible";
+                    hideAbort();
                     SRHintTxtEl.textContent = "Transcribing...";
                     await new Promise(resolve => {
                         medRecorder.onstop = resolve;
@@ -576,11 +638,13 @@
                 }
 
                 window.addEventListener("resize", () => {
+                    positionHint();
+                    alignClock();
                     positionClock();
                     positionWeather();
-                    positionHint();
-                    positionAIBox();
+                    getLocation();
                     positionManIn();
+                    positionAbort();
                 })
 
                 const setupInputEl = document.getElementById("setup-input");
@@ -693,6 +757,39 @@
 
                     Hint.style.top = target_y;
                 }
+
+                function stopSTT() {
+                    const SRHintTxtEl = document.getElementById("SRHintTxt");
+                    const SRHintEl = document.getElementById("SRHint");
+                    if (recordState) {
+                        console.log("Recording aborted!");
+                        medRecorder.stop();
+                        recordState = false;
+                        modRecordBtn();
+                        hideAbort();
+                        SRHintTxtEl.textContent = "Press to start recognition";
+                        SRHintEl.style.visibility = "hidden";
+                        SRBtnEl.addEventListener("mouseout", removeHint);
+                        modManIn(false);
+                    } else {
+                        console.warn("No recording is currently in progress.");
+                    }
+                }
+
+                function positionAbort() {
+                    const abortSTTEl = document.getElementById("abortSTT");
+                    const startSTTEl = document.getElementById("startSTT");
+                    
+                    abortSTTEl.style.left = startSTTEl.offsetLeft;
+                    abortSTTEl.style.top = startSTTEl.offsetTop;
+
+                    abortSTTEl.disabled = true;
+                    abortSTTEl.style.visibility = "hidden";
+                    
+                    abortSTTEl.onclick = stopSTT;
+                    
+                }
+
                 function updateClock() {
                     const now = new Date();
                     let hour = now.getHours().toString().padStart(2,"0");
@@ -817,6 +914,7 @@
                         positionWeather();
                         getLocation();
                         positionManIn();
+                        positionAbort();
                     }
                 }
 
@@ -852,6 +950,7 @@
                         positionWeather();
                         getLocation();
                         positionManIn();
+                        positionAbort();
                         return;
                     }
                 }
@@ -864,10 +963,6 @@
                     document.body.style.visibility = "visible";
                     initApp();
                 });
-
-                window.addEventListener("resize", () => {
-                    positionClock();
-                })
             </script>
         </body>
     </html>
