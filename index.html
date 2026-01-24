@@ -451,7 +451,6 @@
                     } 
                     recordState = true;
                     modRecordBtn();
-                    modManIn(true);
                     SRBtnEl.removeEventListener("mouseout", removeHint);
                     const SRHintEl = document.getElementById("SRHint");
                     const SRHintTxtEl = document.getElementById("SRHintTxt");
@@ -472,6 +471,7 @@
 
                         medRecorder.start();
                         console.log("Listening");
+                        modManIn(true);
 
                     } catch (e) {
                         console.error("Error listenting: ",e);
