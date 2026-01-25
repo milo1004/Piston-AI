@@ -339,13 +339,7 @@
                     <img src="src/abort.png" draggable="false" style="height: 80%">
                 </button>
             </div>
-            <div id="AIbox">
-                <p id="user-input" style="user-select: text; cursor: text">
-                    You: 
-                </p>
-                <p id="piston-res" style="color:#a6ff01; margin-top: 5px; user-select: text; cursor: text;">
-                </p>
-            </div>
+            <div id="AIbox"></div>
             <p class="credit" onclick="redirectToGitHub()">Brought to you by Milo Chan</p>
             <script>
                 const SRBtnEl = document.getElementById("startSTT");
@@ -385,7 +379,9 @@
                             askPiston(manInEl.value);
                             manInEl.value = "";
                             sendBtnEl.disabled = true;
+                            sendBtnEl.style.opacity = "20%";
                             startSTTEl.disabled = false;
+                            startSTTEl.style.opacity = "100%";
                             return;
                         }
                     }
@@ -571,7 +567,37 @@
                     const weatherEl = document.getElementById("weather");
 
                     AIboxEl.style.top = (weatherEl.offsetTop + weatherEl.offsetHeight) + 10 + 'px';
-                    AIboxEl.style.left = (window.innerWidth - AIboxEl.offsetLeft) / 2;  
+                    AIboxEl.style.left = (window.innerWidth - AIboxEl.offsetLeft) / 2; 
+
+                    const historyMsg = JSON.parse(localStorage.getItem("history"));
+
+                    if (historyMsg.length === 0 || historyMsg === null) return;
+
+                    for (let i = 0; i < historyMsg.length; i++) {
+                        if (historyMsg[i].role == "user") {
+                            const userIn = document.createElement("p");
+                            userIn.style.color = "white";
+                            userIn.style.userSelect = "text";
+                            userIn.style.cursor = "text";
+                            userIn.textContent = `You: ${historyMsg[i].content}`;
+                            AIboxEl.appendChild(userIn);
+                        } else if (historyMsg[i].role === "assistant") {
+                            const pisRes = document.createElement("p");
+                            pisRes.style.color = "#a6ff01";
+                            pisRes.style.marginTop = "5px";
+                            pisRes.style.userSelect = "text";
+                            pisRes.style.cursor = "text";
+                            pisRes.textContent = historyMsg[i].content;
+                            AIboxEl.appendChild(pisRes);
+                            const lineBreak = document.createElement("br");
+                            lineBreak.style.lineHeight = 2.0;
+                            AIboxEl.appendChild(lineBreak);
+                        }
+
+                    }
+                    AIboxEl.style.visibility = "visible";
+                    AIboxout = false;
+                    modAIBox();
                 }
 
                 async function stopRecording() {
@@ -703,20 +729,23 @@
 
                 async function askPiston(uInput) {
                     const AIboxEl = document.getElementById("AIbox");
-                    const uInputEl = document.getElementById("user-input");
-                    const pistonResEl = document.getElementById("piston-res");
                     try {
-                        positionAIBox();
                         AIboxEl.style.visibility = "visible";
-                        uInputEl.textContent = "You: " + uInput;
 
-                        pistonResEl.textContent = "";
                         let historyMsg = localStorage.getItem("history");
                         if (!historyMsg) {
                             historyMsg = [];
                         } else {
                             historyMsg = JSON.parse(historyMsg);
                         }
+                        
+                        const uInputEl = document.createElement("p");
+                        uInputEl.style.color = "white";
+                        uInputEl.style.userSelect = "text";
+                        uInputEl.style.cursor = "text";
+                        uInputEl.textContent = `You: ${uInput}`;
+                        AIboxEl.appendChild(uInputEl); 
+
                         let memory = `You have access to the memory below: \n The user's name is ${localStorage.getItem("username")}`;
                         const now = new Date();
                         let AdditionalData = `Additional data: \nweather:${localStorage.getItem("temperature")}, ${localStorage.getItem("weatherCode")}\ndate (DD/MM/YYYY): ${now.getDate().toString().padStart(2,"0")}/${now.getMonth().toString().padStart(2,"0")}/${now.getFullYear}\ntime (hour:minute): ${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
@@ -736,14 +765,41 @@
                         saveHistory(role="user", message=uInput);
                         const response = await result.json();
                         saveHistory(role="assistant", message=response.reply);
+                           
                         if (response.reply === "chat.clear") {
                             localStorage.setItem("history", "[]");
+                            const breaks = AIboxEl.querySelectorAll("br");
+                            breaks.forEach(br => {
+                                breaks.parentNode.removeChild(breaks);
+                            });
                             response.reply = "Chat cleared! Let's start fresh";
+                            const conv = AIboxEl.querySelectorAll("p");
+                            conv.forEach(conv => {
+                                conv.parentNode.removeChild(conv);
+                            });
+                            const linebreak = document.createElement("br");
+                            linebreak.style.lineHeight = 2.0;
+                            AIboxEl.appendChild(linebreak);
                         }
-                        pistonResEl.textContent = response.reply;
-                        positionAIBox();
+
+                        const pisRes = document.createElement("p");
+                        pisRes.style.color = "#a6ff01";
+                        pisRes.style.userSelect = "text";
+                        pisRes.style.cursor = "text";
+                        pisRes.style.marginTop = "5px";
+                        pisRes.textContent = response.reply;
+                        AIboxEl.appendChild(pisRes);
+                        const lineBreak = document.createElement("br");
+                        lineBreak.style.lineHeight = 2.0;
+                        AIboxEl.appendChild(lineBreak);
                     } catch (e) {
-                        pistonResEl.textContent = `Error: ${e}`;
+                        const pisRes = document.createElement("p");
+                        pisRes.style.color = "#a6ff01";
+                        pisRes.style.userSelect = "text";
+                        pisRes.style.cursor = "text";
+                        pisRes.style.marginTop = "5px";
+                        pisRes.textContent = `Error: ${e.state}, ${e}`;
+                        AIboxEl.appendChild(pisRes);
                     }
                 }
 
@@ -915,6 +971,7 @@
                         getLocation();
                         positionManIn();
                         positionAbort();
+                        positionAIBox();
                     }
                 }
 
@@ -951,6 +1008,7 @@
                         getLocation();
                         positionManIn();
                         positionAbort();
+                        positionAIBox();
                         return;
                     }
                 }
