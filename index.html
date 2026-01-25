@@ -739,6 +739,10 @@
                             historyMsg = JSON.parse(historyMsg);
                         }
                         
+                        const clearPromptEl = document.getElementById("clearPrompt");
+                        if (clearPromptEl) {
+                            clearPromptEl.remove();
+                        }
                         const uInputEl = document.createElement("p");
                         uInputEl.style.color = "white";
                         uInputEl.style.userSelect = "text";
@@ -768,10 +772,6 @@
                            
                         if (response.reply === "chat.clear") {
                             localStorage.setItem("history", "[]");
-                            const breaks = AIboxEl.querySelectorAll("br");
-                            breaks.forEach(br => {
-                                breaks.parentNode.removeChild(breaks);
-                            });
                             response.reply = "Chat cleared! Let's start fresh";
                             const conv = AIboxEl.querySelectorAll("p");
                             conv.forEach(conv => {
@@ -782,13 +782,24 @@
                             AIboxEl.appendChild(linebreak);
                         }
 
-                        const pisRes = document.createElement("p");
-                        pisRes.style.color = "#a6ff01";
-                        pisRes.style.userSelect = "text";
-                        pisRes.style.cursor = "text";
-                        pisRes.style.marginTop = "5px";
-                        pisRes.textContent = response.reply;
-                        AIboxEl.appendChild(pisRes);
+                        if (response.reply === "Chat cleared! Let's start fresh") {
+                            const pisRes = document.createElement("p");
+                            pisRes.style.color = "#a6ff01";
+                            pisRes.style.userSelect = "text";
+                            pisRes.style.cursor = "text";
+                            pisRes.style.marginTop = "5px";
+                            pisRes.textContent = response.reply;
+                            pisRes.setAttribute("id","clearPrompt");
+                            AIboxEl.appendChild(pisRes);
+                        } else {
+                            const pisRes = document.createElement("p");
+                            pisRes.style.color = "#a6ff01";
+                            pisRes.style.userSelect = "text";
+                            pisRes.style.cursor = "text";
+                            pisRes.style.marginTop = "5px";
+                            pisRes.textContent = response.reply;
+                            AIboxEl.appendChild(pisRes);
+                        }
                         const lineBreak = document.createElement("br");
                         lineBreak.style.lineHeight = 2.0;
                         AIboxEl.appendChild(lineBreak);
