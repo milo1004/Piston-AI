@@ -742,6 +742,10 @@
                         const clearPromptEl = document.getElementById("clearPrompt");
                         if (clearPromptEl) {
                             clearPromptEl.remove();
+                            const brEl = AIbox.querySelectorAll("br");
+                            brEl.forEach(br => {
+                                br.parentNode.removeChild(br);
+                            })
                         }
                         const uInputEl = document.createElement("p");
                         uInputEl.style.color = "white";
@@ -752,7 +756,7 @@
 
                         let memory = `You have access to the memory below: \n The user's name is ${localStorage.getItem("username")}`;
                         const now = new Date();
-                        let AdditionalData = `Additional data: \nweather:${localStorage.getItem("temperature")}, ${localStorage.getItem("weatherCode")}\ndate (DD/MM/YYYY): ${now.getDate().toString().padStart(2,"0")}/${now.getMonth().toString().padStart(2,"0")}/${now.getFullYear}\ntime (hour:minute): ${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
+                        let AdditionalData = `Additional data: \nweather data:${localStorage.getItem("weatherData")}\ndate (DD/MM/YYYY): ${now.getDate().toString().padStart(2,"0")}/${now.getMonth().toString().padStart(2,"0")}/${now.getFullYear}\ntime (hour:minute): ${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
                         const result = await fetch("https://piston-ai.chanyanyan3205.workers.dev", {
                             method: "POST",
                             headers: {
@@ -958,8 +962,7 @@
                         weatherData.src = `src/${code}.png`
 
                         console.log(temp,tempUnit," ",code,);
-                        localStorage.setItem("temperature",`${temp}${tempUnit}`);
-                        localStorage.setItem("weatherCode",code);
+                        localStorage.setItem("weatherData",JSON.stringify(data));
                     } catch (e) {
                         console.log(`Failed to get weather: ${e}`);
                     }
