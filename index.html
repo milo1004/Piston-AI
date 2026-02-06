@@ -1,5 +1,4 @@
-    <!DOCTYPE html>
-
+<!DOCTYPE html>
     <html>
         <head>
             <title>
@@ -14,7 +13,8 @@
 
                 body, html {
                     overflow: hidden;
-                    height: 100%;                }
+                    height: 100%;                
+                }
 
                 * {
                     margin: 0;
@@ -32,6 +32,8 @@
                     background-color: #050505;
                     margin: 3%;
                     justify-content: center;
+                    overflow: hidden;
+                    overscroll-behavior-y: none;
                 }
 
                 .greeting-h2 {
@@ -104,7 +106,7 @@
                     padding-right: 1em;
                     top: 10%;
                     left: 10%;
-                    background-color: black;
+                    background-image: linear-gradient(rgb(47,47,47), rgb(0,0,0));
                     flex-direction: column;
                 }
 
@@ -130,7 +132,7 @@
                     padding-right: 1em;
                     top: 10%;
                     right: 10%;
-                    background-color: black;
+                    background-image: linear-gradient(rgb(47, 47, 47), rgb(0,0,0));
                     flex-direction: column;
                 }
 
@@ -204,7 +206,7 @@
                     display: flex;
                     justify-content: center;
                     align-items: center;
-                    transition: 
+                    transition:
                         background-color 0.2s ease,
                         opacity 0.2s ease;
                     visibility: hidden;
@@ -258,12 +260,14 @@
                     align-items: center;
                     overflow-y: auto;
                     z-index: 5;
-                    width: 45%;
+                    width: 30%;
                     height: 50%;
-                    background-color: black;
+                    background-image: linear-gradient(rgb(47,), rgb(0,0,0));
                     transition: 
                         background-color 0.2s ease,
                         transform 0.2s ease;
+                    overscroll-behavior-y: auto;
+                    overscroll-behavior-x: none;
                 }
 
                 #AIbox:hover {
@@ -288,7 +292,61 @@
 
                 #manIn:disabled {
                     cursor: not-allowed;
+				}
+
+                #alarmBox {
+                    border: 2px solid gray;
+                    border-radius: 20px;
+                    width: 20em;
+                    display: flex;
+                    flex-direction: column;
+                    position: absolute;
+                    background-color: black;
+                    align-items: center;
+					height: 50%;
+					width: 20%;
+					overflow-x: hidden;
+					overflow-y: hidden;
                 }
+            
+				#alarmPrompt {
+					display: flex;
+					background-color: gray;
+                    border-bottom: 2px solid gray;
+                    position: absolute;
+                    align-items: center;
+					width: 100%;
+					height: 2em;
+					justify-content: center;
+                }
+
+				#createAlarm {
+					background-color: gray;
+					border: none;
+					border-radius: 10px;
+					position: absolute;
+					transition:
+						background-color 0.2s ease;
+					opacity: 100%;
+					width: 30px;
+					height: 30px;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+				}
+
+				#createAlarm:hover {
+					background-color: black;
+					cursor: pointer;
+				}
+
+				#alarmsContainer {
+					display: flex;
+					flex-direction: column;
+					overflow-y: auto;
+					position: absolute;
+				}
+
             </style>
         </head>
         <body>
@@ -340,6 +398,15 @@
                 </button>
             </div>
             <div id="AIbox"></div>
+            <div id="alarmBox">
+                <div id="alarmPrompt">
+                    <p id="promptText">Alarms</p>
+					<button id="createAlarm">
+						<img id="createImg" src="src/add.png" alt="Create" width=25 height=25>
+					</button>
+                </div>
+				<div id="alarmsContainer"></div>
+			</div>
             <p class="credit" onclick="redirectToGitHub()">Brought to you by Milo Chan</p>
             <script>
                 const SRBtnEl = document.getElementById("startSTT");
@@ -359,7 +426,7 @@
                     if (manInEl.value.trim() === "") {
                         sendBtnEl.disabled = true;
                         sendBtnEl.style.opacity = "20%";
-                        startSTTEl.disabled = false;
+           				startSTTEl.disabled = false;
                         startSTTEl.style.opacity = "100%";
                     } else if (manInEl.value.trim() !== "") {
                         sendBtnEl.disabled = false;
@@ -393,8 +460,8 @@
                     const sendBtnEl = document.getElementById("sendBtn");
                     const startSTTEl = document.getElementById("startSTT");
 
-                    manInEl.style.left = startSTTEl.offsetLeft - 5 - manInEl.offsetWidth + 'px';
-                    manInEl.style.bottom = 10 + 'px';
+						manInEl.style.left = startSTTEl.offsetLeft - 5 - manInEl.offsetWidth + 'px';
+						manInEl.style.bottom = 10 + 'px';
                     sendBtnEl.style.left = startSTTEl.offsetLeft - 5 - sendBtnEl.offsetWidth - 8 + 'px';
                     const rel_borders = (manInEl.offsetHeight - sendBtnEl.offsetHeight) / 2;
                     sendBtnEl.style.top = manInEl.offsetTop + rel_borders + 'px';
@@ -440,15 +507,19 @@
                             alert("Microphone permission has been denied.");
                         } else if (e.name === "NotFoundError") {
                             alert("Warning: Microphone not found. Make sure a microphone has been connected properly.");
+                            var micNotFound = true;
                         } else {
                             alert("getUserMedia failed: ",e.name,e.message);
                             console.error(e);
                         }
+                        const SRHintEl = document.getElementById("SRHint");
+                        SRHintEl.style.visibility = "hidden";   
                     }
                 }
 
                 async function checkMicPerm() {
                     const permissionStat = await navigator.permissions.query({ name: "microphone" });
+                    console.log(`Microphone permission state = ${permissionStat.state}`);
                     if (permissionStat.state === "granted") {
                         return 0;
                     } else if (permissionStat.state === "denied") {
@@ -571,8 +642,9 @@
 
                     const historyMsg = JSON.parse(localStorage.getItem("history"));
 
-                    if (historyMsg.length === 0 || historyMsg === null) return;
-
+                   	if (historyMsg === null) return;
+					
+					if (historyMsg.length === 0) return;
                     for (let i = 0; i < historyMsg.length; i++) {
                         if (historyMsg[i].role == "user") {
                             const userIn = document.createElement("p");
@@ -671,6 +743,11 @@
                     getLocation();
                     positionManIn();
                     positionAbort();
+                    positionAIBox();
+                    positionClock();
+                    if (createAlarmInProgress) {
+                        createAlarmFunc();
+                    }
                 })
 
                 const setupInputEl = document.getElementById("setup-input");
@@ -690,20 +767,19 @@
 
                 SRBtnEl.addEventListener("mouseout", removeHint);
 
-                SRBtnEl.onclick = () => {
+                SRBtnEl.onclick = async () => {
                     let micPerm;
-                    micPerm = checkMicPerm();
+                    micPerm = await checkMicPerm();
                     if (micPerm === 0) {
-                        // TODO: add record logic
                     } else if (micPerm === 1) {
                         alert("Microphone access has been denied. Please grant it in browser setings or system settings.");
                         return;
                     } else if (micPerm === 2) {
                         requestMic();
                         micPerm = checkMicPerm();
-                        if (micPerm === "denied") {
+                        if (micPerm === 1) {
                             alert("Warning: Microphon access has been denied. Grant it in browser to use Piston AI.");
-                        } else if (micPerm === "granted") {
+                        } else if (micPerm === 0) {
                             console.log("Microphone access granted!");
                             return;
                         }
@@ -774,13 +850,10 @@
                         const response = await result.json();
                         saveHistory(role="assistant", message=response.reply);
                            
-                        if (response.reply === "chat.clear") {
+                        if (response.reply.includes("chat.clear")) {
                             localStorage.setItem("history", "[]");
                             response.reply = "Chat cleared! Let's start fresh";
-                            const conv = AIboxEl.querySelectorAll("p");
-                            conv.forEach(conv => {
-                                conv.parentNode.removeChild(conv);
-                            });
+                            document.getElementById("AIbox").innerHTML = "";
                             const linebreak = document.createElement("br");
                             linebreak.style.lineHeight = 2.0;
                             AIboxEl.appendChild(linebreak);
@@ -860,6 +933,211 @@
                     abortSTTEl.onclick = stopSTT;
                     
                 }
+                
+                let createAlarmInProgress = false;
+
+              	function positionAlarm() {
+					const AIboxEl = document.getElementById("AIbox");
+					const alarmBoxEl = document.getElementById("alarmBox");
+					const alarmPromptEl = document.getElementById("alarmPrompt");
+					const createAlarmEl = document.getElementById("createAlarm");
+					const alarmsContainerEl = document.getElementById("alarmsContainer");
+
+                    AIboxEl.style.visibility = "visible";
+					const target_y = AIboxEl.offsetTop +'px';
+					const target_x = (AIboxEl.offsetLeft - alarmBox.offsetWidth) / 2 + 'px';
+
+					alarmPromptEl.style.width = alarmBoxEl.offsetWidth;
+					alarmBoxEl.style.top = target_y;
+					alarmBoxEl.style.left = target_x;
+					createAlarmEl.style.left = alarmPromptEl.offsetLeft + 4 + 'px';
+					alarmsContainer.style.height = alarmBoxEl.offsetHeight - alarmPrompt.offsetHeight - 3 + 'px';
+					alarmsContainer.style.width = alarmBoxEl.offsetWidth + 'px';
+					alarmPrompt.style.top = "0px";
+					alarmsContainer.style.top = alarmPrompt.offsetHeight + 'px';
+                    AIboxEl.style.visibility = "hidden";
+
+                    createAlarmEl.onclick = handleAlarmBack;
+
+                    positionAIBox();
+				}
+
+                function handleAlarmBack() {
+                    const alarmsContainerEl = document.getElementById("alarmsContainer");
+                        if (createAlarmInProgress === true) {
+                            alarmsContainerEl.innerHTML = "";
+                            document.getElementById("createImg").src = "src/add.png"
+                            createAlarmInProgress = false;
+                            // TODO: Add function to enumerate and render through all alarms
+                        } else {
+                            createAlarmFunc();
+                        }
+                }
+
+				function addAlarm(title, hour, minute, repeats) {
+					const AIboxEl = document.getElementById("AIbox");
+					const alarmBoxEl = document.getElementById("alarmBox");
+					
+					let previousAlarms = JSON.parse(localStorage.getItem("alarms"));
+					if (previousAlarms === null) localStorage.setItem("alarms", []);
+
+					if (repeats.length === 0 || repeats === null) {
+						repeats = [];
+					}
+
+					const now = new Date();
+					
+					const alarmId = `${now.getFullYear()}${now.getMonths}${now.getDate()}${now.getHours()}${now.getMinutes()}`;
+						
+					const payload = {
+						name:title,
+						time:`${hour}:${minute}`,
+						repeat:repeats,
+						id: alarmId
+					}
+
+					if (previousAlarms.length === 0 || previousAlarms === "") {
+						previousAlarms = [];
+					}
+					
+					previousAlarms.push(payload);
+
+					localStorage.setItem("alarms", JSON.stringify(previousAlarms));
+				}
+
+				function createAlarmFunc() {
+                    createAlarmInProgress = true;
+					const promptTextEl = document.getElementById("promptText");
+					const alarmImg = document.getElementById("createImg");
+					const alarmsContainerEl = document.getElementById("alarmsContainer");
+                    const alarmBoxEl = document.getElementById("alarmBox");
+                    alarmsContainerEl.style.overflowX = "hidden";   
+
+					promptTextEl.textContent = "Create Alarm";
+					alarmImg.src = "src/back.png";
+										
+					alarmsContainerEl.style.visibility = "visible";
+                    alarmsContainerEl.innerHTML = "";
+                    alarmsContainerEl.style.width = alarmBoxEl.offsetWidth;
+					
+                    const timeContainerEl = document.createElement("div");
+                    timeContainerEl.style.display = "flex";
+                    timeContainerEl.style.flexDirection = "row";
+                    timeContainerEl.style.position = "relative";
+                    timeContainerEl.style.width = alarmsContainerEl.offsetWidth + 'px';
+                    timeContainerEl.style.border = "0.7px solid gray";
+                    timeContainerEl.style.backgroundColor = "black";
+                    timeContainerEl.style.paddingTop = '3px';
+                    timeContainerEl.style.paddingBottom = '3px';
+                    const timePrompt = document.createElement("p"); 
+                    timePrompt.style.display = "flex";
+                    timePrompt.style.alignItems = "center";
+                    timePrompt.style.marginLeft = "1em";
+                    timePrompt.textContent = "Time";
+                    timePrompt.style.backgroundColor = "black";
+                    timePrompt.style.width = "4em";
+                    timePrompt.style.color = "white";
+                    timePrompt.style.height = "2.75em";
+                    const timeSelector = document.createElement("input");
+                    timeSelector.style.backgroundColor = "white";
+                    timeSelector.style.color = "black";
+                    const now = new Date();
+                    const currentHour = String(now.getHours()).padStart(2,"0");
+                    const currentMinute = String(now.getMinutes()).padStart(2,"0");
+                    timeSelector.type = "Time";
+                    timeSelector.value = `${currentHour}:${currentMinute}`;
+                    timeSelector.style.width = "15em";
+                    timeSelector.style.position = "absolute";
+                    timeSelector.style.right = "1em"; 
+                    timeSelector.style.height = "2.75em";
+                    timeSelector.style.borderRadius = "2em";
+                    timeSelector.style.paddingLeft = "0.5em";
+                    timeSelector.style.paddingRight = "0.5em";
+                    timeContainerEl.offsetHeight = timeSelector.offsetHeight + 3 + 'px';
+                    timeContainerEl.appendChild(timePrompt);
+                    timeContainerEl.appendChild(timeSelector);
+
+                    alarmsContainerEl.appendChild(timeContainerEl);
+
+                    const labelContainerEl = document.createElement("div");
+                    labelContainerEl.style.display = "flex";
+                    labelContainerEl.style.flexDirection = "row";
+                    labelContainerEl.style.position = "relative";
+                    labelContainerEl.style.width = alarmsContainerEl.offsetWidth + 'px';
+                    labelContainerEl.style.border = "0.7px solid gray";
+                    labelContainerEl.style.backgroundColor = "black";
+                    labelContainerEl.style.paddingTop = '3px';
+                    labelContainerEl.style.paddingBottom = '3px';
+                    
+                    const labelPromptEl = document.createElement("p");
+                    labelPromptEl.style.display = "flex";
+                    labelPromptEl.style.alignItems = "center";
+                    labelPromptEl.style.marginLeft = "1em";
+                    labelPromptEl.textContent = "Time";
+                    labelPromptEl.style.backgroundColor = "black";
+                    labelPromptEl.style.width = "4em";
+                    labelPromptEl.style.color = "white";
+                    labelPromptEl.style.height = "2.75em";
+                    labelPromptEl.textContent = "Label";
+
+                    const labelInput = document.createElement("input");
+                    labelInput.style.backgroundColor = "white";
+                    labelInput.placeholder = "Alarm";
+                    labelInput.style.color = "black";
+                    labelInput.style.width = "15em";
+                    labelInput.style.position = "absolute";
+                    labelInput.style.right = "1em"; 
+                    labelInput.style.height = "2.75em";
+                    labelInput.style.borderRadius = "2em";
+                    labelInput.style.paddingLeft = "1em";
+
+                    labelContainerEl.appendChild(labelPromptEl);
+                    labelContainerEl.appendChild(labelInput);
+                    alarmsContainerEl.appendChild(labelContainerEl);
+
+                    const repeatContainerEl = document.createElement("div");
+                    repeatContainerEl.style.display = "flex";
+                    repeatContainerEl.style.flexDirection = "row";
+                    repeatContainerEl.style.position = "relative";
+                    repeatContainerEl.style.width = alarmsContainerEl.offsetWidth + 'px';
+                    repeatContainerEl.style.border = "0.7px solid gray";
+                    repeatContainerEl.style.backgroundColor = "black";
+                    repeatContainerEl.style.height = labelPromptEl.offsetHeight + 'px';
+
+                    const repeatButton = document.createElement("button");
+                    repeatButton.style.border = "0px";
+                    repeatButton.style.width = alarmsContainerEl.offsetWidth + 6 + 'px';
+                    repeatButton.style.backgroundColor = "black";
+                    repeatButton.style.cursor = "pointer";
+                    repeatButton.style.transition = "background-color 0.2s ease";
+                    repeatButton.addEventListener("mouseover", () => {
+                        repeatButton.style.backgroundColor = "gray";
+                    });
+                    repeatButton.addEventListener("mouseout", () => {
+                        repeatButton.style.backgroundColor = "black";
+                    })
+                    repeatButton.style.display = "flex";
+                    repeatButton.style.flexDirection = "row";
+                    repeatButton.style.color = "white";
+                    const repeatPrompt = document.createElement("p");
+                    repeatPrompt.style.display = "flex";
+                    repeatPrompt.textContent = "Repeat";
+                    repeatPrompt.style.alignItems = "center";                        
+
+                    const repeatImg = document.createElement("img");
+                    repeatImg.src = "src/enter.png";
+                    repeatImg.style.height = "2.75em";
+                    repeatImg.style.width = "2.75em"
+                    repeatButton.appendChild(repeatPrompt);
+                    repeatButton.appendChild(repeatImg);
+                    repeatContainerEl.appendChild(repeatButton);
+                    var repeated = [];
+                    if (repeated.length === 0) {
+                        repeatPrompt.textContent = "Repeat: None"
+                    }
+
+                    alarmsContainerEl.appendChild(repeatContainerEl);
+                }
 
                 function updateClock() {
                     const now = new Date();
@@ -884,12 +1162,12 @@
                         "Fri",
                         "Sat"
                     ]
+
                     let weekday = now.getDay();
                     let dateRN = now.getDate().toString();
 
                     weekdayEl.textContent = weekdays[weekday];
                     dateEl.textContent = dateRN;
-
                 }
                 function alignClock() {
                     updateClock();
@@ -901,7 +1179,7 @@
                             updateClock();
                             positionClock();
                         },60000);
-                    }, remainingSecs)
+                    }, remainingSecs * 1000);
                 }
 
                 function positionClock() {
@@ -967,8 +1245,9 @@
                         console.log(`Failed to get weather: ${e}`);
                     }
                 }
-
+				
                 function initApp() {
+
                     setInterval(getLocation, 3600000);
                     let userName = localStorage.getItem("username");
                     requestMic();
@@ -986,6 +1265,7 @@
                         positionManIn();
                         positionAbort();
                         positionAIBox();
+						positionAlarm();
                     }
                 }
 
@@ -1023,6 +1303,7 @@
                         positionManIn();
                         positionAbort();
                         positionAIBox();
+						positionAlarm();
                         return;
                     }
                 }
