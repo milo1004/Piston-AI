@@ -347,6 +347,27 @@
 					position: absolute;
 				}
 
+                #alarmsRepeated {
+                    display: flex;
+                    flex-direction: column;
+                    overflow-x: hidden;
+                    position: absolute;
+                    visibility: hidden;
+                    background-color: white;
+                    border-radius: 3em;
+                    transition: opacity 0.2s ease;
+                }
+
+                .repeatOpt {
+                    background-color: white;
+                    border-radius: 3em;
+                    transition: background-color 0.2s ease;
+                }
+
+                .repeatOpt:hover {
+                    background-color: gray;
+                    cursor: pointer;
+                }
             </style>
         </head>
         <body>
@@ -406,6 +427,11 @@
 					</button>
                 </div>
 				<div id="alarmsContainer"></div>
+                <div id="alarmsRepeated">
+                    <button id="repeatedSun">
+                        <img>
+                    </button>
+                </div>
 			</div>
             <p class="credit" onclick="redirectToGitHub()">Brought to you by Milo Chan</p>
             <script>
@@ -969,6 +995,8 @@
                             document.getElementById("createImg").src = "src/add.png"
                             createAlarmInProgress = false;
                             // TODO: Add function to enumerate and render through all alarms
+                        } else if (createAlarmInProgress === "repeatStage"){
+                            createAlarmFunc();
                         } else {
                             createAlarmFunc();
                         }
@@ -1102,6 +1130,7 @@
                     repeatContainerEl.style.width = alarmsContainerEl.offsetWidth + 'px';
                     repeatContainerEl.style.border = "0.7px solid gray";
                     repeatContainerEl.style.backgroundColor = "black";
+                    repeatContainerEl.style.padding = "0 0 0 0";
                     repeatContainerEl.style.height = labelPromptEl.offsetHeight + 'px';
 
                     const repeatButton = document.createElement("button");
@@ -1122,18 +1151,23 @@
                     const repeatPrompt = document.createElement("p");
                     repeatPrompt.style.display = "flex";
                     repeatPrompt.textContent = "Repeat";
-                    repeatPrompt.style.alignItems = "center";                        
+                    repeatPrompt.style.alignItems = "center";
+                    repeatButton.style.alignItems = "center";               
 
                     const repeatImg = document.createElement("img");
                     repeatImg.src = "src/enter.png";
-                    repeatImg.style.height = "2.75em";
-                    repeatImg.style.width = "2.75em"
+                    repeatImg.style.height = "2em";
+                    repeatImg.style.width = "2em";
+                    repeatImg.style.position = "absolute";
+                    repeatImg.style.right = "1px";
                     repeatButton.appendChild(repeatPrompt);
                     repeatButton.appendChild(repeatImg);
                     repeatContainerEl.appendChild(repeatButton);
                     var repeated = [];
                     if (repeated.length === 0) {
                         repeatPrompt.textContent = "Repeat: None"
+                    } else {
+                        repeatPrompt.textContent = `Repeat: ${repeated.join(", ")}`;
                     }
 
                     alarmsContainerEl.appendChild(repeatContainerEl);
