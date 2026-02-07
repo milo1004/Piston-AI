@@ -354,19 +354,45 @@
                     position: absolute;
                     visibility: hidden;
                     background-color: white;
-                    border-radius: 3em;
+                    border-radius: 10px;
                     transition: opacity 0.2s ease;
+                    border: 2px solid gray;
+                    box-shadow: 0 10px 8px gray;
                 }
 
                 .repeatOpt {
                     background-color: white;
-                    border-radius: 3em;
                     transition: background-color 0.2s ease;
+                    color: black;
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                    border: none;
+                    padding-right: 5em;
                 }
 
                 .repeatOpt:hover {
                     background-color: gray;
                     cursor: pointer;
+                }
+
+                .repeatText {
+                    color: black;
+                    height: 25px;
+                    display: flex;
+                    align-items: center;
+                }
+ 
+                .repeatImg {
+                    width:25px; 
+                    height:25px;
+                    margin-right: 1em;
+                    visibility: hidden;
+                }
+
+                #quoteOfTheDay {
+                    font-style: italic;
+                    color: gray;
                 }
             </style>
         </head>
@@ -401,6 +427,10 @@
                     <h1>&nbsp</h1>
                     <h1 id="weatherText" style="font-weight: 600">No data</h1>
                 </div>
+                <div id="qotd">
+                    <p id="quoteOfTheDay"></p>
+                    <p id="quoteAuthor"></p>
+                </div>
             </div>
 
             <div id="speechRecDiv">
@@ -427,12 +457,43 @@
 					</button>
                 </div>
 				<div id="alarmsContainer"></div>
-                <div id="alarmsRepeated">
-                    <button id="repeatedSun">
-                        <img>
-                    </button>
-                </div>
 			</div>
+            <div id="alarmsRepeated">
+                <button id="repeatedSun" class="repeatOpt">
+                    <img src="src/check.png" class="repeatImg">
+                    <p class="repeatText">Sunday</p>
+                </button>
+                <hr>
+                <button id="repeatedMon" class="repeatOpt">
+                    <img src="src/check.png" class="repeatImg">
+                    <p class="repeatText">Monday</p>
+                </button>
+                <hr>
+                <button id="repeatedTue" class="repeatOpt">
+                    <img src="src/check.png" class="repeatImg">
+                    <p class="repeatText">Tuesday</p>
+                </button>
+                <hr>
+                <button id="repeatedWed" class="repeatOpt">
+                    <img src="src/check.png" class="repeatImg">
+                    <p class="repeatText">Wednesday</p>
+                </button>
+                <hr>
+                <button id="repeatedThu" class="repeatOpt">
+                    <img src="src/check.png" class="repeatImg">
+                    <p class="repeatText">Thursday</p>
+                </button>
+                <hr>
+                <button id="repeatedFri" class="repeatOpt">
+                    <img src="src/check.png" class="repeatImg">
+                    <p class="repeatText">Friday</p>
+                </button>
+                <hr>
+                <button id="repeatedSat" class="repeatOpt">
+                    <img src="src/check.png" class="repeatImg">
+                    <p class="repeatText">Sunday</p>
+                </button>
+            </div>
             <p class="credit" onclick="redirectToGitHub()">Brought to you by Milo Chan</p>
             <script>
                 const SRBtnEl = document.getElementById("startSTT");
@@ -1034,6 +1095,8 @@
 				}
 
 				function createAlarmFunc() {
+                    const alarmsRepeatedEl = document.getElementById("alarmsRepeated");
+                    alarmsRepeatedEl.style.visibility = "hidden";
                     createAlarmInProgress = true;
 					const promptTextEl = document.getElementById("promptText");
 					const alarmImg = document.getElementById("createImg");
@@ -1152,7 +1215,8 @@
                     repeatPrompt.style.display = "flex";
                     repeatPrompt.textContent = "Repeat";
                     repeatPrompt.style.alignItems = "center";
-                    repeatButton.style.alignItems = "center";               
+                    repeatButton.style.alignItems = "center";      
+      
 
                     const repeatImg = document.createElement("img");
                     repeatImg.src = "src/enter.png";
@@ -1163,6 +1227,19 @@
                     repeatButton.appendChild(repeatPrompt);
                     repeatButton.appendChild(repeatImg);
                     repeatContainerEl.appendChild(repeatButton);
+
+                    repeatButton.onclick = () => {
+                        if (alarmsRepeatedEl.style.visibility === "hiddden") {
+                            alarmsRepeatedEl.style.position = "absolute";
+                            alarmsRepeatedEl.style.left = alarmsContainerEl.offsetLeft + alarmsContainerEl.offsetWidth + 'px';
+                            alarmsRepeatedEl.style.top = alarmBoxEl.offsetTop + repeatButton.offsetHeight * 3 + 'px';
+                            alarmsRepeatedEl.style.visibility = "visible";
+                        } else if (alarmsRepeatedEl.style.visibility === "visible") {
+                            alarmsRepeatedEl.style.visibility = "hidden";
+                        }
+                    }   
+                    
+
                     var repeated = [];
                     if (repeated.length === 0) {
                         repeatPrompt.textContent = "Repeat: None"
@@ -1234,7 +1311,7 @@
                 function positionWeather() {
                     const greeting = document.getElementById("greeting");
                     const weatherEl = document.getElementById("weather");
-                    const weatehrInfoEl = document.getElementById("weatherInfo");
+                    const weatherInfoEl = document.getElementById("weatherInfo");
 
                     const rect = greeting.getBoundingClientRect();
                     weatherEl.style.top = rect.bottom + (10 / window.innerHeight) + 'px';
@@ -1279,6 +1356,22 @@
                         console.log(`Failed to get weather: ${e}`);
                     }
                 }
+
+                async function getQuoteOfTheday() {
+                    const quoteOfTheDayEl = document.getElementById("quoteOfDay");
+                    const qotdEl = document.getElementById("qotd");
+                    const quoteAuthorEl = document.getElementById("quoteAuthor");
+                    qotdEl.style.width = document.getElementById("weather").offsetWidth + 'px';
+                    try {
+                        const result = await fetch("https://piston-ai.chanyanyan3205.workers.dev/quote");
+                        const data = await result.json();
+
+                        quoteOfTheDayEl.textContent = `"${data.text}"\n`;
+                        quoteAuthorEl.textContent = `- ${data.author}`;
+                    } catch (e) {
+                        console.log(`Failed to obtain quote: ${e}`);
+                    }
+                }
 				
                 function initApp() {
 
@@ -1300,6 +1393,7 @@
                         positionAbort();
                         positionAIBox();
 						positionAlarm();
+                        getQuoteOfTheday();
                     }
                 }
 
@@ -1338,6 +1432,7 @@
                         positionAbort();
                         positionAIBox();
 						positionAlarm();
+                        getQuoteOfTheday();
                         return;
                     }
                 }
