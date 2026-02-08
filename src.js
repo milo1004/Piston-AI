@@ -224,9 +224,9 @@ function modRecordBtn() {
 
 function positionAIBox() {
     const AIboxEl = document.getElementById("AIbox");
-    const weatherEl = document.getElementById("weather");
+    const tcEl = document.getElementById("tc");
 
-    AIboxEl.style.top = (weatherEl.offsetTop + weatherEl.offsetHeight) + 10 + 'px';
+    AIboxEl.style.top = (tcEl.offsetTop + tcEl.offsetHeight) + 10 + 'px';
     AIboxEl.style.left = (window.innerWidth - AIboxEl.offsetLeft) / 2; 
 
     const historyMsg = JSON.parse(localStorage.getItem("history"));
@@ -959,7 +959,7 @@ function updateGreeting() {
     console.log(hour)
     const morning = ["Good morning","Morning","Hey"]
     const afternoon = ["Good afternoon","Hey there"];
-    const evening = ["Good evening","Evening"];
+    const evening = ["Good evening","Evening","Hope your day went good"];
     const night = ["Still up?", "Burning up the midnight oil?"];
     const greetingEl = document.getElementById("greeting");
 
