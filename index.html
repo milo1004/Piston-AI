@@ -307,6 +307,7 @@
 					width: 20%;
 					overflow-x: hidden;
 					overflow-y: hidden;
+                    visibility: hidden;
                 }
             
 				#alarmPrompt {
@@ -393,6 +394,8 @@
                 #quoteOfTheDay {
                     font-style: italic;
                     color: gray;
+                    user-select: text;
+                    margin-right: 5px;
                 }
             </style>
         </head>
@@ -419,6 +422,10 @@
                     <div>&nbsp&nbsp</div>
                     <h1 id="date">--</h1>
                 </div>
+                <div id="qotd">
+                    <p id="quoteOfTheDay"></p>
+                    <p id="quoteAuthor"></p>
+                </div>
             </div>
             <div id="weather" class="weather">
                 <h1 class="h1-time" id="temp">--°C</h1>
@@ -427,10 +434,7 @@
                     <h1>&nbsp</h1>
                     <h1 id="weatherText" style="font-weight: 600">No data</h1>
                 </div>
-                <div id="qotd">
-                    <p id="quoteOfTheDay"></p>
-                    <p id="quoteAuthor"></p>
-                </div>
+                <br>
             </div>
 
             <div id="speechRecDiv">
@@ -732,6 +736,7 @@
                    	if (historyMsg === null) return;
 					
 					if (historyMsg.length === 0) return;
+                    AIboxEl.innerHTML = "";
                     for (let i = 0; i < historyMsg.length; i++) {
                         if (historyMsg[i].role == "user") {
                             const userIn = document.createElement("p");
@@ -1031,6 +1036,7 @@
 					const alarmsContainerEl = document.getElementById("alarmsContainer");
 
                     AIboxEl.style.visibility = "visible";
+                    alarmBoxEl.style.visibility = "visible";
 					const target_y = AIboxEl.offsetTop +'px';
 					const target_x = (AIboxEl.offsetLeft - alarmBox.offsetWidth) / 2 + 'px';
 
@@ -1300,8 +1306,9 @@
                     const hourEl = document.getElementById("hour");
                     const minuteEl = document.getElementById("minute");
                     const colonEl = document.getElementById("colon"); 
+                    const quoteOfTheDayEl = document.getElementById("quoteOfTheDay");
 
-                    clockEl.style.width = (hourEl.offsetWidth + minuteEl.offsetWidth + colonEl.offsetWidth + parseInt(window.getComputedStyle(clockEl).getPropertyValue("padding-left"))) + 'px';
+                    clockEl.style.width = (hourEl.offsetWidth + minuteEl.offsetWidth + colonEl.offsetWidth + parseInt(window.getComputedStyle(clockEl).getPropertyValue("padding-left"))) + 15 + 'px';
 
                     const rect = greeting.getBoundingClientRect();
                     clockEl.style.top = rect.bottom + (10 / window.innerHeight) + 'px';
@@ -1312,9 +1319,12 @@
                     const greeting = document.getElementById("greeting");
                     const weatherEl = document.getElementById("weather");
                     const weatherInfoEl = document.getElementById("weatherInfo");
+                    const timeContainerEl = document.getElementById("tc");
 
                     const rect = greeting.getBoundingClientRect();
                     weatherEl.style.top = rect.bottom + (10 / window.innerHeight) + 'px';
+
+                    weatherEl.style.right = "10%";
                 }
 
                 async function getLocation() {
@@ -1358,19 +1368,23 @@
                 }
 
                 async function getQuoteOfTheday() {
-                    const quoteOfTheDayEl = document.getElementById("quoteOfDay");
+                    const quoteOfTheDayEl = document.getElementById("quoteOfTheDay");
                     const qotdEl = document.getElementById("qotd");
                     const quoteAuthorEl = document.getElementById("quoteAuthor");
-                    qotdEl.style.width = document.getElementById("weather").offsetWidth + 'px';
+                    fontsize = parseFloat(window.getComputedStyle(quoteOfTheDayEl).fontSize);
+                    qotdEl.style.width = document.getElementById("tc").offsetWidth - fontsize * 1.25 + 'px';
                     try {
                         const result = await fetch("https://piston-ai.chanyanyan3205.workers.dev/quote");
                         const data = await result.json();
 
-                        quoteOfTheDayEl.textContent = `"${data.text}"\n`;
+                        console.log(data);
+
+                        quoteOfTheDayEl.textContent = `"${data.text}"`;
                         quoteAuthorEl.textContent = `- ${data.author}`;
                     } catch (e) {
                         console.log(`Failed to obtain quote: ${e}`);
                     }
+                    positionAIBox();
                 }
 				
                 function initApp() {
@@ -1392,7 +1406,6 @@
                         positionManIn();
                         positionAbort();
                         positionAIBox();
-						positionAlarm();
                         getQuoteOfTheday();
                     }
                 }
@@ -1431,7 +1444,6 @@
                         positionManIn();
                         positionAbort();
                         positionAIBox();
-						positionAlarm();
                         getQuoteOfTheday();
                         return;
                     }
