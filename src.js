@@ -628,7 +628,7 @@ function stopSTT() {
         SRHintTxtEl.textContent = "Press to start recognition";
         SRHintEl.style.visibility = "hidden";
         SRBtnEl.addEventListener("mouseout", removeHint);
-        modManIn(false);
+        modManIn(true);
     } else {
         console.warn("No recording is currently in progress.");
     }
