@@ -29,17 +29,27 @@
                 body {
                     display: flex;
                     visibility: hidden;
-                    background-color: #050505;
+                    background-image: url("src/wallpapers/dark.jpg");
                     margin: 3%;
                     justify-content: center;
                     overflow: hidden;
                     overscroll-behavior-y: none;
+                    background-size: cover;
+                    background-repeat: no-repeat;
+                    background-position: center;
+                    transition: opacity 0.2s ease;
                 }
 
                 .greeting-h2 {
                     font-size: 3em;
                     position: absolute;
                     font-weight: 400;
+                    border: 1px solid gray;
+                    border-radius: 10px;
+                    background-color:rgba(0, 0, 0, 0.185);
+                    backdrop-filter: blur(2px);
+                    padding-left: 0.5em;
+                    padding-right: 0.5em;
                 }
 
                 body.blur-active > *:not(#setUp-container) {
@@ -80,7 +90,6 @@
                     border-radius: 10px;
                     margin-top: 1.5em;
                     background-color: #0080ff;
-                    width: 4em;
                     height: 2em;
                     color: white;
                     cursor: pointer;
@@ -106,8 +115,9 @@
                     padding-right: 1em;
                     top: 10%;
                     left: 10%;
-                    background-image: linear-gradient(rgb(47,47,47), rgb(0,0,0));
+                    backdrop-filter: blur(3px);
                     flex-direction: column;
+                    background-color: rgba(0, 0, 0, 0.185);
                 }
 
                 .h1-time {
@@ -132,12 +142,13 @@
                     padding-right: 1em;
                     top: 10%;
                     right: 10%;
-                    background-image: linear-gradient(rgb(47, 47, 47), rgb(0,0,0));
                     flex-direction: column;
+                    background-color: rgba(0,0,0,0.185);
+                    backdrop-filter: blur(3px);
                 }
 
                 .startSTT {
-                    border: 2px solid gray;
+                    border: 1.5px solid gray;
                     border-radius: 10em;
                     position: absolute;
                     bottom: 10px;
@@ -145,24 +156,25 @@
                     height: 45px;
                     width: 45px;
                     background-size: cover;
-                    background-color: #000000;
+                    background-color: rgba(0, 0, 0, 0.5);
                     display: flex;
                     justify-content: center;
                     align-items: center;
                     transition: 
                         background-color 0.2s ease,
                         opacity 0.2s ease;
+                    backdrop-filter: blur(3px);
                 }
 
                 #sendBtn {
-                    border: 2px solid gray;
+                    border: 1.5px solid gray;
                     border-radius: 10em;
                     position: absolute;
                     bottom: 10px;
                     height: 40px;
                     width: 40px;
                     background-size: cover;
-                    background-color: #000000;
+                    background-color: black;
                     display: flex;
                     justify-content: center;
                     align-items: center;
@@ -248,7 +260,7 @@
                 }
 
                 #AIbox {
-                    border: 1px solid gray;
+                    border: 1.5px solid gray;
                     border-radius: 20px;
                     padding-left: 5%;
                     padding-right: 5%;
@@ -262,17 +274,20 @@
                     z-index: 5;
                     width: 30%;
                     height: 50%;
-                    background-image: linear-gradient(rgb(47, 47, 47), rgb(0,0,0));
+                    backdrop-filter: blur(10px);
+                    background-color: rgba(66, 66, 66, 0.185);
                     transition: 
-                        opacity 0.2s ease,
-                        transform 0.2s ease;
+                        backdrop-filter 0.2s ease,
+                        transform 0.2s ease,
+                        background-color 0.2s ease;
                     overscroll-behavior-y: auto;
                     overscroll-behavior-x: none;
                 }
 
                 #AIbox:hover {
                     cursor: pointer;
-                    opacity: 50%;
+                    backdrop-filter: blur(5px);
+                    background-color: rgba(112, 112, 112, 0.473);
                 }
 
                 #manIn {
@@ -401,6 +416,50 @@
                 #quoteAuthor {
                     color: gray;
                 }
+
+                .pistonSettings {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 3.5em;
+                    height: 3.5em;
+                    border: 1.5px solid gray;
+                    border-radius: 2em;
+                    background-color: rgba(0,0,0,0.3);
+                    position: absolute;
+                    right: 1em;
+                    top: 1em;
+                    cursor: pointer;
+                    opacity: 100%;
+                    transition: opacity 0.2s ease, background-color 0.2s ease;
+                }
+
+                .pistonSettings:hover {
+                    opacity: 50%;
+                    background-color: gray;
+                }
+
+                #settingsContainer {
+                    visibility: visible;
+                    position: absolute;
+                    border: 1px solid gray;
+                    backdrop-filter: blur(3px);
+                    background-color:rgba(0, 0, 0, 0.525);
+                    border-radius: 10px;
+                    overflow-x: hidden;
+                    right: 1em;
+                    box-shadow: 0 0 10px 2px rgb(0 0 0 / 0.8);
+                    transition: opacity 0.5s ease-in-out;
+                }
+
+                #wallpapersContainer {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 0.5em;
+                    padding-left: 0.5em;
+                    padding-top: 0.5em;
+                    padding-bottom: 0.5em;
+                }
             </style>
         </head>
         <body>
@@ -412,7 +471,7 @@
                 <p><br>What should we call you?</p>
                 <input type="text" id="setup-input" value="" placeholder="Your name here">
                 <br>
-                <input type="button" value="Done :&#41 " id="setup-done-btn" onclick="setupDone()">
+                <button id="setup-done-btn" onclick="setupDone()"><p>Done :&#41</p></button>
                 <p id="setup-warning" style="color: red; font-size: x-small; margin-top: 0.5em; visibility: hidden; z-index: 1001;"></p>
             </div>
             <div id="tc" class="tc">
@@ -438,7 +497,6 @@
                     <h1>&nbsp</h1>
                     <h1 id="weatherText" style="font-weight: 600">No data</h1>
                 </div>
-                <br>
             </div>
 
             <div id="speechRecDiv">
@@ -501,6 +559,15 @@
                     <img src="src/check.png" class="repeatImg">
                     <p class="repeatText">Sunday</p>
                 </button>
+            </div>
+            <button id="pistonSettings" class="pistonSettings">
+                <img src="src/settings.png" style="width: 2em; height: 2em">
+            </button>
+            <div id="settingsContainer">
+                <h1 style="margin-left: 0.35em; font-weight: 250;">Themes</h1>
+                <hr>
+                <div id="wallpapersContainer">
+                </div>
             </div>
             <p class="credit" onclick="redirectToGitHub()">Brought to you by Milo Chan</p>
             <script src="src.js">

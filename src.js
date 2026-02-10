@@ -6,6 +6,126 @@ let recordState = false;
 let AIboxout = true;
 const AIboxElTemp = document.getElementById("AIbox");
 AIboxElTemp.onclick = modAIBox;
+let pistonSettingsState = false;
+
+function configPistonSettings() {
+    const bg = window.getComputedStyle(document.body).backgroundImage.slice(4, -1).replace(/["']/g, "");
+
+    const pistonSettingsEl = document.getElementById("pistonSettings");
+    const settingsContainerEl = document.getElementById("settingsContainer");
+    pistonSettingsEl.onclick = () => {
+        if (pistonSettingsState === false) {
+            showPistonSettings();
+        } else if (pistonSettingsState === true) {
+            hidePistonSettings();
+        }
+    }
+
+    settingsContainerEl.onclick = (e) => {
+        e.stopPropagation();
+    } 
+
+    document.addEventListener("click", (e) => {
+        if (!settingsContainerEl.contains(e.target) && !pistonSettingsEl.contains(e.target)) {
+            hidePistonSettings();
+        }
+    })
+}
+
+function showPistonSettings() {
+    pistonSettingsState = true;
+    const settingsContainerEl = document.getElementById("settingsContainer");
+    settingsContainerEl.style.visibility = "visible";
+    settingsContainerEl.style.opacity = "0%";
+    requestAnimationFrame(() => {
+        settingsContainerEl.style.opacity = "1";
+    })
+}
+
+function hidePistonSettings() {
+    pistonSettingsState = false;
+    const settingsContainerEl = document.getElementById("settingsContainer");
+    settingsContainerEl.style.opacity ="100%";
+    settingsContainerEl.style.opacity = "0%";
+    setTimeout(() => {
+        settingsContainerEl.style.visibility = "hidden";
+    }, 200);
+}
+async function positionSettings() {
+    pistonSettingsState = false;
+    const settingsContainerEl = document.getElementById("settingsContainer");
+    const pistonSettingsEl = document.getElementById("pistonSettings");
+    const wallpapersContainerEl = document.getElementById("wallpapersContainer");
+    wallpapersContainerEl.style.width = (parseFloat(window.getComputedStyle(wallpapersContainerEl).fontSize) / 2) * 2 + 128 * 2 + 'px';
+
+    settingsContainerEl.style.top = pistonSettingsEl.offsetTop + pistonSettingsEl.offsetHeight + 5 + 'px';
+    settingsContainerEl.style.right = 2 + "em";
+    settingsContainerEl.style.visibility = "hidden";
+
+    let currentWallpaper = localStorage.getItem("currentBG");
+    if (!currentWallpaper) {
+        localStorage.setItem("currentBG", "dark.jpg");
+        currentWallpaper = "dark.jpg";
+    }
+
+    const res = await fetch("./src/wallpapers/wallpapers.json");
+    const data = await res.json();
+
+    console.log(data);
+
+    wallpapersContainerEl.innerHTML = "";
+    
+    for (const filename of data) {
+        const wallpaper = document.createElement("img");
+        wallpaper.src = `./src/wallpapers/${filename}`;
+        wallpaper.loading = "lazy";
+        wallpaper.style.objectFit = "cover";
+        wallpaper.style.width = "128px";
+        wallpaper.style.height = "72px";
+        wallpaper.style.borderRadius = 5 + 'px';
+        wallpaper.id = filename;
+        wallpaper.style.border = "none";
+        wallpaper.style.opacity = "100%"
+        wallpaper.style.transition = "opacity 0.2s ease";
+        wallpaper.style.outlineOffset = "30px";
+        wallpaper.addEventListener("mouseover", () => {
+            wallpaper.style.opacity = "50%"
+        });
+        wallpaper.addEventListener("mouseout", () => {
+            wallpaper.style.opacity = "100%";
+        });
+        wallpaper.style.cursor = "pointer";
+        wallpapersContainerEl.appendChild(wallpaper);
+        wallpaper.onclick = () => {
+            setCurrentWallpaper(wallpaper.id);
+            positionSettings();
+            showPistonSettings();
+        }
+    }
+
+    const children = wallpapersContainerEl.children;
+    for (let i = 0; i < children.length; i++) {
+        children[i].style.border = "none";
+    }
+    const currentWallpaperElement = document.getElementById(currentWallpaper);
+    currentWallpaperElement.style.border = "2px solid";
+    currentWallpaperElement.style.borderColor = "#a6ff01";
+
+    document.body.style.backgroundImage = `url('./src/wallpapers/${currentWallpaper}')`;
+
+    configPistonSettings();
+}
+
+function setCurrentWallpaper(wallpaper) {
+    document.body.style.opacity = "0%";
+    requestAnimationFrame(() => {
+        document.body.style.backgroundImage = `url('./src/wallpapers/${wallpaper}')`;
+    })
+    requestAnimationFrame(() => {
+        document.body.style.opacity = "100%";
+    })   
+    localStorage.setItem("currentBG", wallpaper);
+}
 
 function handleInput() {
     const manInEl = document.getElementById("manIn");
@@ -78,11 +198,15 @@ function modAIBox() {
     if (AIboxout === true) {
         const target_y = window.innerHeight - AIboxEl.offsetHeight * 0.2;
         const rel_y = target_y - AIboxEl.offsetTop;
+        AIboxEl.style.transform = `translate(0, -100px)`;
+        setTimeout(() => {}, 200);
         AIboxEl.style.transform = `translate(0, ${rel_y}px)`;
         AIboxout = false;
     } else if (AIboxout === false) {
         const target_y = weatherEl.offsetTop + weatherEl.offsetHeight + 10;
         const rel_y = target_y - AIboxEl.offsetTop;
+        AIboxEl.style.transform = `translate(0, 100px)`;
+        setTimeout(() => {}, 200);
         AIboxEl.style.transform = `translate(0, ${rel_y}px)`;
         AIboxout = true;
     }
@@ -334,7 +458,7 @@ window.addEventListener("resize", () => {
     positionManIn();
     positionAbort();
     positionAIBox();
-    positionClock();
+    positionSettings();
     if (createAlarmInProgress) {
         createAlarmFunc();
     }
@@ -786,7 +910,7 @@ function updateClock() {
 }
 function alignClock() {
     updateClock();
-    updateGreeting()
+    updateGreeting();
     const now = new Date();
     const remainingSecs = 60 - now.getSeconds();
     setTimeout(() => {
@@ -794,7 +918,6 @@ function alignClock() {
         setInterval(() => {
             updateClock();
             positionClock();
-            updateGreeting();
         },60000);
     }, remainingSecs * 1000);
 }
@@ -889,7 +1012,10 @@ async function getQuoteOfTheday() {
 
 function initApp() {
 
-    setInterval(getLocation, 3600000);
+    setInterval(() => {
+        getLocation();
+        updateGreeting();
+    }, 3600000);
     let userName = localStorage.getItem("username");
     requestMic();
     if (!userName) {
@@ -907,6 +1033,7 @@ function initApp() {
         positionAbort();
         positionAIBox();
         getQuoteOfTheday();
+        positionSettings();
     }
 }
 
@@ -945,6 +1072,7 @@ function setupDone() {
         positionAbort();
         positionAIBox();
         getQuoteOfTheday();
+        positionSettings();
         return;
     }
 }
@@ -952,6 +1080,8 @@ function setupDone() {
 function redirectToGitHub() {
     window.open("https://github.com/milo1004","_blank");
 }
+
+
 
 function updateGreeting() {
     const now = new Date();
@@ -972,7 +1102,7 @@ function updateGreeting() {
     } else if (hour >= 17 && hour < 23) {
         greet = `${evening[Math.floor(Math.random() * evening.length)]}, ${localStorage.getItem("username")}`;
     } else {
-        greet = `${night[Math.floor(Math.random() * evening.length)]} ${localStorage.getItem("username")}`;
+        greet = `${night[Math.floor(Math.random() * evening.length)]} ${localStorage.getItem("username")}?`;
     }
 
     greetingEl.textContent = greet;
