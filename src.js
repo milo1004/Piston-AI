@@ -1102,10 +1102,13 @@ function updateGreeting() {
     } else if (hour >= 17 && hour < 23) {
         greet = `${evening[Math.floor(Math.random() * evening.length)]}, ${localStorage.getItem("username")}`;
     } else {
-        greet = `${night[Math.floor(Math.random() * evening.length)]} ${localStorage.getItem("username")}?`;
+        greet = `${night[Math.floor(Math.random() * night.length)]} ${localStorage.getItem("username")}?`;
     }
 
     greetingEl.textContent = greet;
+    if (greetingEl.textContent.includes("undefined")) {
+        updateGreeting();
+    }
 }
 
 document.fonts.ready.then(() => {
