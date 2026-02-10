@@ -64,8 +64,8 @@ async function positionSettings() {
 
     let currentWallpaper = localStorage.getItem("currentBG");
     if (!currentWallpaper) {
-        localStorage.setItem("currentBG", "dark.jpg");
-        currentWallpaper = "dark.jpg";
+        localStorage.setItem("currentBG", "gradient-1.jpg");
+        currentWallpaper = "gradient-1.jpg";
     }
 
     const res = await fetch("./src/wallpapers/wallpapers.json");
