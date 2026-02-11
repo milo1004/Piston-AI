@@ -1,56 +1,19 @@
 ![Banner of Piston AI](AI.png)
 
-# 🤖 Piston AI
+# Piston AI
+Piston AI is a web-based AI assistant, inspired by the HomePod and the Alexa. The main difference is that it actually incldues a UI, which users can choose from typing in conversations or voice control it.
 
-**Piston AI** is an open-source, **browser-based voice AI assistant** powered by **Cloudflare Workers AI**.  
-It focuses on **low-latency speech interaction**, **simplicity**, and **no client-side API keys**.
+# Features
+- AI assistant
+- A standby display for convenience
+- Themes
+- meaningful quotes
 
-A lightweight, voice assistant — inspired by Alexa / Siri — but built like a standby agent.
+# Contributions:
+This project is open source under the MIT LICENSE, meaning that persmission is granted to copying and modifying freely.
 
-### Visit the site: https://pistonai.pages.dev/
+# Setting up
+Since Piston AI is web-based, it is super easy to setup. Just head to [https://pistonai.pages.dev](https://pistonai.pages.dev), and setup according to the on-screen instructions!
 
----
-
-## ✨ Features
-
-- 🎙️ **Speech-to-Text (STT)** using Workers AI
-- 🧠 **LLM inference via Cloudflare Workers AI**
-- 🌐 **Fully browser-based frontend**
-- ⚡ **Low latency** (~2s typical)
-- 🔐 **No API keys exposed to users**
-- 🧩 Simple & extendable architecture
-- 🖱️ Interactive UI (minimizable AI box!)
-
----
-
-## 🧠 How It Works
-
-1. Audio is recorded in the browser using `MediaRecorder`
-2. Audio is sent as `audio/webm` to a Cloudflare Worker
-3. Workers AI performs speech-to-text
-4. The transcription is returned to the frontend
-5. (Optional) The text is sent to an LLM for response generation
-6. The result is displayed in the UI
-
-## 📄 Third-Party Licenses
-
-This project uses the following third-party resources:
-
-- **Material Design Icons**  
-  © Google  
-  Licensed under the Apache License, Version 2.0  
-  https://www.apache.org/licenses/LICENSE-2.0
-
-Material Design is a trademark of Google LLC.
-
-## 💻 Wanna modify this project?
-The frontend of this project is FULLY open source, under the MIT LICENSE!
-To download it:
-```bash
-    git clone https://github.com/milo1004/Piston-AI.git
-```
-*I'd recommend you to open index.html with Live Server of VSCode, since backend would block some weather, location and Workers AI requests.*
-
-**Note**: The backend runs on **Cloudflare Workers AI** and does **not require client-side API keys**.
-
-Enjoy!
+# License
+[MIT](https://github.com/milo1004/Piston-AI/blob/main/LICENSE)

@@ -35,16 +35,20 @@ function configPistonSettings() {
 function showPistonSettings() {
     pistonSettingsState = true;
     const settingsContainerEl = document.getElementById("settingsContainer");
+    const pistonSettingsEl = document.getElementById("pistonSettings");
+    pistonSettingsEl.style.rotate = "90deg";
     settingsContainerEl.style.visibility = "visible";
     settingsContainerEl.style.opacity = "0%";
     requestAnimationFrame(() => {
         settingsContainerEl.style.opacity = "1";
-    })
+    });
 }
 
 function hidePistonSettings() {
     pistonSettingsState = false;
     const settingsContainerEl = document.getElementById("settingsContainer");
+    const pistonSettingsEl = document.getElementById("pistonSettings");
+    pistonSettingsEl.style.rotate = "0deg";
     settingsContainerEl.style.opacity ="100%";
     settingsContainerEl.style.opacity = "0%";
     setTimeout(() => {
@@ -402,7 +406,6 @@ async function stopRecording() {
     const SRHintEl = document.getElementById("SRHint");
     const SRHintTxtEl = document.getElementById("SRHintTxt");
     AIboxout = false;
-    modAIBox();
     SRHintEl.style.visibility = "visible";
     hideAbort();
     SRHintTxtEl.textContent = "Transcribing...";
@@ -454,7 +457,6 @@ window.addEventListener("resize", () => {
     alignClock();
     positionClock();
     positionWeather();
-    getLocation();
     positionManIn();
     positionAbort();
     positionAIBox();
@@ -517,6 +519,75 @@ sendBtnEl.onclick = () => {
     startSTTEl.disabled = false;
 }
 
+function addMemory(message) {
+    console.log(message.length);
+    if (message.length === 0) {
+        return;
+    } else {
+        let memory = JSON.parse(localStorage.getItem("memory"));
+        const memoryAddNotiEl = document.getElementById("memoryAddNoti");
+        const memorydescriptionEl = document.getElementById("memorydescription");
+        if (!memory) {
+            localStorage.setItem("memory","[]");
+            memory = [];
+        }
+        memory.push(message);
+        localStorage.setItem("memory",JSON.stringify(memory));
+        noVerboseAsk(`Tell ${localStorage.getItem("username")} that you have remembered about "${message}".`);
+        memoryAddNotiEl.style.transform = `translate(0, ${memoryAddNotiEl.offsetHeight + 5 + 'px'})`;
+        memoryAddNotiEl.style.visibility = "visible";
+        memoryAddNotiEl.style.top = memoryAddNotiEl.offsetHeight + 5 + 'px';
+        memorydescriptionEl.textContent = `The memory: "${message}" has been added`;
+        setTimeout(() => {
+            memoryAddNotiEl.style.transform = `translate(0, ${-memoryAddNotiEl.offsetHeight + 5 + 'px'})`;
+            setTimeout(() => {
+                memoryAddNotiEl.style.visibility = "hidden"
+            }, 500);
+        }, 3000);
+    }
+}
+
+async function noVerboseAsk(uInput) {
+    const AIboxEl = document.getElementById("AIbox");
+    try {
+        AIboxEl.style.visibility = "visible";
+        if (!AIboxout) { modAIBox(); };
+        const now = new Date(); 
+        const result = await fetch("https://piston-ai.chanyanyan3205.workers.dev", {
+            method: "POST",
+            headers: {
+                "Content-Type":"application/json"
+            },
+            body: JSON.stringify({
+                prompt: uInput
+            })
+        });
+        if (!result.ok) {
+            throw `POST https://chanyanyan3205.cloudflare.com/ ${result.statusText}`;
+        }
+        const response = await result.json();
+        saveHistory(roles="assistant", message=response.reply);
+        const pisRes = document.createElement("p");
+        pisRes.style.color = "#a6ff01";
+        pisRes.style.userSelect = "text";
+        pisRes.style.cursor = "text";
+        pisRes.style.marginTop = "5px";
+        pisRes.textContent = response.reply;
+        AIboxEl.appendChild(pisRes);
+        const lineBreak = document.createElement("br");
+        lineBreak.style.lineHeight = 2.0;
+        AIboxEl.appendChild(lineBreak);
+    } catch (e) {
+        const pisRes = document.createElement("p");
+        pisRes.style.color = "#a6ff01";
+        pisRes.style.userSelect = "text";
+        pisRes.style.cursor = "text";
+        pisRes.style.marginTop = "5px";
+        pisRes.textContent = `Error: ${e.state}, ${e}`;
+        AIboxEl.appendChild(pisRes);
+    }
+}
+
 async function askPiston(uInput) {
     const AIboxEl = document.getElementById("AIbox");
     try {
@@ -543,9 +614,9 @@ async function askPiston(uInput) {
         uInputEl.style.cursor = "text";
         uInputEl.textContent = `You: ${uInput}`;
         AIboxEl.appendChild(uInputEl); 
-
-        let memory = `You have access to the memory below: \n The user's name is ${localStorage.getItem("username")}`;
-        const now = new Date();
+        if (!AIboxout) { modAIBox(); };
+        let memory = `You have access to the memory below: \n The user's name is ${localStorage.getItem("username")}, ${JSON.stringify(localStorage.getItem("memory"))}`;
+        const now = new Date(); 
         let AdditionalData = `Additional data: \nweather data:${localStorage.getItem("weatherData")}\ndate (DD/MM/YYYY): ${now.getDate().toString().padStart(2,"0")}/${now.getMonth().toString().padStart(2,"0")}/${now.getFullYear}\ntime (hour:minute): ${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
         const result = await fetch("https://piston-ai.chanyanyan3205.workers.dev", {
             method: "POST",
@@ -560,9 +631,33 @@ async function askPiston(uInput) {
         if (!result.ok) {
             throw `POST https://chanyanyan3205.cloudflare.com/ ${result.statusText}`;
         }
-        saveHistory(role="user", message=uInput);
+        saveHistory(roles="user", message=uInput);
         const response = await result.json();
-        saveHistory(role="assistant", message=response.reply);
+        console.log(`Raw reply: ${response.reply}`);
+        
+        if (response.reply.slice(0,10).toLowerCase() === "memory.add") {
+            addMemory(response.reply.slice(11, response.reply.length));
+            return;
+        } 
+        if (response.reply.slice(0,12).toLowerCase() === "memory.clear") {
+            const pisRes = document.createElement("p");
+            localStorage.setItem("memory","[]");
+            pisRes.style.color = "#a6ff01";
+            pisRes.style.userSelect = "text";
+            pisRes.style.cursor = "text";
+            pisRes.style.marginTop = "5px";
+            pisRes.textContent = "Memory cleared!";
+            AIboxEl.appendChild(pisRes);
+            
+            const linebreak = document.createElement("br");
+            linebreak.style.lineHeight = 2.0;
+            AIboxEl.appendChild(linebreak);
+
+            saveHistory(roles="assistant", message="Memory cleared!");
+            return;
+        }
+
+        saveHistory(roles="assistant", message=response.reply);
             
         if (response.reply.includes("chat.clear")) {
             localStorage.setItem("history", "[]");
@@ -582,6 +677,7 @@ async function askPiston(uInput) {
             pisRes.textContent = response.reply;
             pisRes.setAttribute("id","clearPrompt");
             AIboxEl.appendChild(pisRes);
+            return;
         } else {
             const pisRes = document.createElement("p");
             pisRes.style.color = "#a6ff01";
@@ -910,7 +1006,6 @@ function updateClock() {
 }
 function alignClock() {
     updateClock();
-    updateGreeting();
     const now = new Date();
     const remainingSecs = 60 - now.getSeconds();
     setTimeout(() => {
@@ -929,7 +1024,6 @@ function positionClock() {
     const hourEl = document.getElementById("hour");
     const minuteEl = document.getElementById("minute");
     const colonEl = document.getElementById("colon"); 
-    const quoteOfTheDayEl = document.getElementById("quoteOfTheDay");
 
     clockEl.style.width = (hourEl.offsetWidth + minuteEl.offsetWidth + colonEl.offsetWidth + parseInt(window.getComputedStyle(clockEl).getPropertyValue("padding-left"))) + 15 + 'px';
 
@@ -952,13 +1046,19 @@ function positionWeather() {
 
 async function getLocation() {
     try {
-        const response = await fetch("https://ipwho.is");                    
+        const response = await fetch("https://ipwho.is", 
+            {
+                signal: AbortSignal.timeout(5000)
+            }
+        );                    
         const data = await response.json();
 
         console.log(`Lat: ${data.latitude} Lon: ${data.longitude}`);
         getWeather(data.latitude, data.longitude);
     } catch (error) {
         console.error("Failed to obtain lat and lon from https://ipwho.is: ", error);
+
+        getWeather();
     }
 
 
@@ -966,8 +1066,32 @@ async function getLocation() {
 
 async function getWeather(lat, lon) {
     const codes = { 0: "clear", 1: "mostly clear", 2: "partly cloudy", 3: "overcast", 45: "foggy", 48: "foggy", 51: "light drizzle", 61: "rain", 80: "rain showers", 95: "thunderstorm" };
+    if (!lat && !lon) {
+        const data = JSON.parse(localStorage.getItem("weatherData"));
+        if (!data) {
+            console.log("Weather cache not found");
+            return 
+        };
+        const temp = data.current_weather.temperature.toString();
+        const code = codes[data.current_weather.weathercode];
+        const tempUnit = data.current_weather_units.temperature;
+        console.log(data)
+
+        const tempEl = document.getElementById("temp");
+        const weatherText = document.getElementById("weatherText");
+        const weatherData = document.getElementById("weatherData");
+
+        tempEl.textContent = temp + tempUnit;
+        weatherText.textContent = code;
+        weatherData.src = `src/${code}.png`
+
+        console.log(temp,tempUnit," ",code,);
+        return;
+    }
     try {
-        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`, {
+            signal: AbortSignal.timeout(5000)
+        });
         const data = await response.json();
 
         const temp = data.current_weather.temperature.toString();
@@ -987,6 +1111,15 @@ async function getWeather(lat, lon) {
         localStorage.setItem("weatherData",JSON.stringify(data));
     } catch (e) {
         console.log(`Failed to get weather: ${e}`);
+        console.log("Fallback. Using cached data.");
+
+        const data = JSON.parse(localStorage.getItem("weatherData"));
+
+        if (!data) {
+            console.log("Fallback failed. No weather data cached.")
+        } else {
+            getWeather();
+        }
     }
 }
 
@@ -997,8 +1130,11 @@ async function getQuoteOfTheday() {
     fontsize = parseFloat(window.getComputedStyle(quoteOfTheDayEl).fontSize);
     qotdEl.style.width = document.getElementById("tc").offsetWidth - fontsize * 1.25 + 'px';
     try {
-        const result = await fetch("https://piston-ai.chanyanyan3205.workers.dev/quote");
+        const result = await fetch("https://piston-ai.chanyanyan3205.workers.dev/quote", {
+            signal: AbortSignal.timeout(5000)
+        });
         const data = await result.json();
+        localStorage.setItem("quote", JSON.stringify(data));
 
         console.log(data);
 
@@ -1006,16 +1142,22 @@ async function getQuoteOfTheday() {
         quoteAuthorEl.textContent = `- ${data.author}`;
     } catch (e) {
         console.log(`Failed to obtain quote: ${e}`);
+        console.log("Fallback: Using quote from cache");
+        
+        const data = JSON.parse(localStorage.getItem("quote"));
+        if (!data) {
+            console.log("Previously cached quote not found.");
+        }
+        
+        quoteOfTheDayEl.textContent = `"${data.text}"`;
+        quoteAuthorEl.textContent = `- ${data.author}`;
+
+        alert("This device is currently in offline mode.");
     }
     positionAIBox();
 }
 
 function initApp() {
-
-    setInterval(() => {
-        getLocation();
-        updateGreeting();
-    }, 3600000);
     let userName = localStorage.getItem("username");
     requestMic();
     if (!userName) {
@@ -1034,6 +1176,11 @@ function initApp() {
         positionAIBox();
         getQuoteOfTheday();
         positionSettings();
+        updateGreeting();
+        setInterval(() => {
+            getLocation();
+            updateGreeting();
+        }, 3600000);
     }
 }
 
@@ -1060,8 +1207,12 @@ function setupDone() {
         const greetingEl = document.getElementById("greeting");
         localStorage.setItem("username",username);
         greetingEl.textContent = `Welcome back, ${username}!`;
-        setupEl.style.visibility = "hidden";
-        warningTxt.style.visibility = "hidden"
+        setupEl.style.opacity = "0%";
+        requestAnimationFrame(() => {
+            setupEl.style.visibility = "hidden";
+            warningTxt.style.visibility = "hidden"
+        })
+
         document.body.classList.remove("blur-active");
         positionHint();
         alignClock();

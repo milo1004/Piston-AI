@@ -44,7 +44,7 @@
                     font-size: 3em;
                     position: absolute;
                     font-weight: 400;
-                    border: 1px solid gray;
+                    border: 2px solid gray;
                     border-radius: 10px;
                     background-color:rgba(0, 0, 0, 0.185);
                     backdrop-filter: blur(2px);
@@ -69,11 +69,13 @@
                     border: 2px solid gray;
                     border-radius: 10px;
                     padding: 1.5em;
-                    box-shadow: 0 0 20px rgba(0,0,0,0.8);
+                    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+                    backdrop-filter: blur(3px);
                     z-index: 1000;
                     justify-content: center;
                     align-items: center;
-                    padding: 5%
+                    padding: 5%;
+                    transition: opacity 0.2s ease;
                 }
 
                 #setup-input {
@@ -285,6 +287,7 @@
                         background-color 0.2s ease;
                     overscroll-behavior-y: auto;
                     overscroll-behavior-x: none;
+                    box-shadow: 0 6px 20px rgb(0,0,0,0.8);
                 }
 
                 #AIbox:hover {
@@ -305,7 +308,7 @@
                     z-index: 6;
                     box-sizing: border-box;
                     transition:
-                        opacity 0.2s ease;
+                        opacity 0.2s ease;    
                 }
 
                 #manIn:disabled {
@@ -434,7 +437,8 @@
                     top: 1em;
                     cursor: pointer;
                     opacity: 100%;
-                    transition: opacity 0.2s ease, background-color 0.2s ease;
+                    rotate: 0deg;
+                    transition: opacity 0.2s ease, background-color 0.2s ease, rotate 1s ease;
                 }
 
                 .pistonSettings:hover {
@@ -451,7 +455,7 @@
                     border-radius: 10px;
                     overflow-x: hidden;
                     right: 1em;
-                    box-shadow: 0 0 10px 2px rgb(0 0 0 / 0.8);
+                    box-shadow: 0 0 10px 2px rgb(0, 0, 0, 0.8);
                     transition: opacity 0.5s ease-in-out;
                 }
 
@@ -462,6 +466,29 @@
                     padding-left: 0.5em;
                     padding-top: 0.5em;
                     padding-bottom: 0.5em;
+                }
+
+                #memoryAddNoti {
+                    border: 1px solid gray;
+                    border-radius: 10px;
+                    background-color: rgba(0,0,0,0.5);
+                    backdrop-filter: blur(3px);
+                    padding-left: 5em;
+                    padding-right: 5em;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    height: 6em;
+                    overflow-y:auto;
+                    visibility: hidden;
+                    padding-top: 0.5em;
+                    transition: transform 0.5s ease-in-out;
+                    z-index: 1200;
+                }
+
+                #memorydescription {
+                    color: white;
+                    font-size: medium;
                 }
             </style>
         </head>
@@ -571,6 +598,10 @@
                 <hr>
                 <div id="wallpapersContainer">
                 </div>
+            </div>
+            <div id="memoryAddNoti">
+                <h2 style="font-weight: 600; color: white;">Memory added</h2>
+                <p id="memorydescription"></p>
             </div>
             <p class="credit" onclick="redirectToGitHub()">Brought to you by Milo Chan</p>
             <script src="src.js">
