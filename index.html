@@ -315,103 +315,6 @@
                     cursor: not-allowed;
 				}
 
-                #alarmBox {
-                    border: 2px solid gray;
-                    border-radius: 20px;
-                    width: 20em;
-                    display: flex;
-                    flex-direction: column;
-                    position: absolute;
-                    background-color: black;
-                    align-items: center;
-					height: 50%;
-					width: 20%;
-					overflow-x: hidden;
-					overflow-y: hidden;
-                    visibility: hidden;
-                }
-            
-				#alarmPrompt {
-					display: flex;
-					background-color: gray;
-                    border-bottom: 2px solid gray;
-                    position: absolute;
-                    align-items: center;
-					width: 100%;
-					height: 2em;
-					justify-content: center;
-                }
-
-				#createAlarm {
-					background-color: gray;
-					border: none;
-					border-radius: 10px;
-					position: absolute;
-					transition:
-						background-color 0.2s ease;
-					opacity: 100%;
-					width: 30px;
-					height: 30px;
-					display: flex;
-					align-items: center;
-					justify-content: center;
-				}
-
-				#createAlarm:hover {
-					background-color: black;
-					cursor: pointer;
-				}
-
-				#alarmsContainer {
-					display: flex;
-					flex-direction: column;
-					overflow-y: auto;
-					position: absolute;
-				}
-
-                #alarmsRepeated {
-                    display: flex;
-                    flex-direction: column;
-                    overflow-x: hidden;
-                    position: absolute;
-                    visibility: hidden;
-                    background-color: white;
-                    border-radius: 10px;
-                    transition: opacity 0.2s ease;
-                    border: 2px solid gray;
-                    box-shadow: 0 10px 8px gray;
-                }
-
-                .repeatOpt {
-                    background-color: white;
-                    transition: background-color 0.2s ease;
-                    color: black;
-                    display: flex;
-                    flex-direction: row;
-                    align-items: center;
-                    border: none;
-                    padding-right: 5em;
-                }
-
-                .repeatOpt:hover {
-                    background-color: gray;
-                    cursor: pointer;
-                }
-
-                .repeatText {
-                    color: black;
-                    height: 25px;
-                    display: flex;
-                    align-items: center;
-                }
- 
-                .repeatImg {
-                    width:25px; 
-                    height:25px;
-                    margin-right: 1em;
-                    visibility: hidden;
-                }
-
                 #quoteOfTheDay {
                     font-style: italic;
                     color: white;
@@ -447,7 +350,7 @@
                 }
 
                 #settingsContainer {
-                    visibility: visible;
+                    visibility: hidden;
                     position: absolute;
                     border: 1px solid gray;
                     backdrop-filter: blur(3px);
@@ -457,6 +360,7 @@
                     right: 1em;
                     box-shadow: 0 0 10px 2px rgb(0, 0, 0, 0.8);
                     transition: opacity 0.5s ease-in-out;
+                    opacity: 0%;
                 }
 
                 #wallpapersContainer {
@@ -490,6 +394,20 @@
                     color: white;
                     font-size: medium;
                 }
+
+                #todoBox {
+                    display: flex;
+                    flex-direction: column;
+                    visibility: hidden;
+                    background-color: rgba(0, 0, 0, 0.185);
+                    backdrop-filter: blur(5px);
+                    border: 1px solid gray;
+                    border-radius: 20px;
+                    height: 45%;
+                    box-shadow: 0 6px 20px, (rgba(0, 0, 0, 0.8));
+                    position: absolute;
+                }
+
             </style>
         </head>
         <body>
@@ -528,7 +446,10 @@
                     <h1 id="weatherText" style="font-weight: 600">No data</h1>
                 </div>
             </div>
-
+            <div id="todoBox">
+                <h1>To-Do</h1>
+                <div></div>
+            </div>
             <div id="speechRecDiv">
                 <div id="SRHint">
                     <p id="SRHintTxt" style="color: black">Press to start speech recognition</p>
@@ -545,51 +466,6 @@
                 </button>
             </div>
             <div id="AIbox"></div>
-            <div id="alarmBox">
-                <div id="alarmPrompt">
-                    <p id="promptText">Alarms</p>
-					<button id="createAlarm">
-						<img id="createImg" src="src/add.png" alt="Create" width=25 height=25>
-					</button>
-                </div>
-				<div id="alarmsContainer"></div>
-			</div>
-            <div id="alarmsRepeated">
-                <button id="repeatedSun" class="repeatOpt">
-                    <img src="src/check.png" class="repeatImg">
-                    <p class="repeatText">Sunday</p>
-                </button>
-                <hr>
-                <button id="repeatedMon" class="repeatOpt">
-                    <img src="src/check.png" class="repeatImg">
-                    <p class="repeatText">Monday</p>
-                </button>
-                <hr>
-                <button id="repeatedTue" class="repeatOpt">
-                    <img src="src/check.png" class="repeatImg">
-                    <p class="repeatText">Tuesday</p>
-                </button>
-                <hr>
-                <button id="repeatedWed" class="repeatOpt">
-                    <img src="src/check.png" class="repeatImg">
-                    <p class="repeatText">Wednesday</p>
-                </button>
-                <hr>
-                <button id="repeatedThu" class="repeatOpt">
-                    <img src="src/check.png" class="repeatImg">
-                    <p class="repeatText">Thursday</p>
-                </button>
-                <hr>
-                <button id="repeatedFri" class="repeatOpt">
-                    <img src="src/check.png" class="repeatImg">
-                    <p class="repeatText">Friday</p>
-                </button>
-                <hr>
-                <button id="repeatedSat" class="repeatOpt">
-                    <img src="src/check.png" class="repeatImg">
-                    <p class="repeatText">Sunday</p>
-                </button>
-            </div>
             <button id="pistonSettings" class="pistonSettings">
                 <img src="src/settings.png" style="width: 2em; height: 2em">
             </button>
@@ -604,7 +480,6 @@
                 <p id="memorydescription"></p>
             </div>
             <p class="credit" onclick="redirectToGitHub()">Brought to you by Milo Chan</p>
-            <script src="src.js">
-            </script>
+            <script src="src.js"></script>
         </body>
     </html>

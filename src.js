@@ -23,7 +23,8 @@ function configPistonSettings() {
 
     settingsContainerEl.onclick = (e) => {
         e.stopPropagation();
-    } 
+  } 
+  
 
     document.addEventListener("click", (e) => {
         if (!settingsContainerEl.contains(e.target) && !pistonSettingsEl.contains(e.target)) {
@@ -36,7 +37,7 @@ function showPistonSettings() {
     pistonSettingsState = true;
     const settingsContainerEl = document.getElementById("settingsContainer");
     const pistonSettingsEl = document.getElementById("pistonSettings");
-    pistonSettingsEl.style.rotate = "90deg";
+    pistonSettingsEl.style.rotate = "180deg";
     settingsContainerEl.style.visibility = "visible";
     settingsContainerEl.style.opacity = "0%";
     requestAnimationFrame(() => {
@@ -200,7 +201,7 @@ function modAIBox() {
     const AIboxEl = document.getElementById("AIbox");
 
     if (AIboxout === true) {
-        const target_y = window.innerHeight - AIboxEl.offsetHeight * 0.2;
+        const target_y = window.innerHeight - AIboxEl.offsetHeight * 0.16;
         const rel_y = target_y - AIboxEl.offsetTop;
         AIboxEl.style.transform = `translate(0, -100px)`;
         setTimeout(() => {}, 200);
@@ -461,9 +462,7 @@ window.addEventListener("resize", () => {
     positionAbort();
     positionAIBox();
     positionSettings();
-    if (createAlarmInProgress) {
-        createAlarmFunc();
-    }
+    positionTodoBox();
 })
 
 const setupInputEl = document.getElementById("setup-input");
@@ -615,6 +614,7 @@ async function askPiston(uInput) {
         uInputEl.textContent = `You: ${uInput}`;
         AIboxEl.appendChild(uInputEl); 
         if (!AIboxout) { modAIBox(); };
+        saveHistory(roles="user", message=uInput);
         let memory = `You have access to the memory below: \n The user's name is ${localStorage.getItem("username")}, ${JSON.stringify(localStorage.getItem("memory"))}`;
         const now = new Date(); 
         let AdditionalData = `Additional data: \nweather data:${localStorage.getItem("weatherData")}\ndate (DD/MM/YYYY): ${now.getDate().toString().padStart(2,"0")}/${now.getMonth().toString().padStart(2,"0")}/${now.getFullYear}\ntime (hour:minute): ${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
@@ -631,7 +631,6 @@ async function askPiston(uInput) {
         if (!result.ok) {
             throw `POST https://chanyanyan3205.cloudflare.com/ ${result.statusText}`;
         }
-        saveHistory(roles="user", message=uInput);
         const response = await result.json();
         console.log(`Raw reply: ${response.reply}`);
         
@@ -744,236 +743,6 @@ function positionAbort() {
     
 }
 
-let createAlarmInProgress = false;
-
-function positionAlarm() {
-    const AIboxEl = document.getElementById("AIbox");
-    const alarmBoxEl = document.getElementById("alarmBox");
-    const alarmPromptEl = document.getElementById("alarmPrompt");
-    const createAlarmEl = document.getElementById("createAlarm");
-    const alarmsContainerEl = document.getElementById("alarmsContainer");
-
-    AIboxEl.style.visibility = "visible";
-    alarmBoxEl.style.visibility = "visible";
-    const target_y = AIboxEl.offsetTop +'px';
-    const target_x = (AIboxEl.offsetLeft - alarmBox.offsetWidth) / 2 + 'px';
-
-    alarmPromptEl.style.width = alarmBoxEl.offsetWidth;
-    alarmBoxEl.style.top = target_y;
-    alarmBoxEl.style.left = target_x;
-    createAlarmEl.style.left = alarmPromptEl.offsetLeft + 4 + 'px';
-    alarmsContainer.style.height = alarmBoxEl.offsetHeight - alarmPrompt.offsetHeight - 3 + 'px';
-    alarmsContainer.style.width = alarmBoxEl.offsetWidth + 'px';
-    alarmPrompt.style.top = "0px";
-    alarmsContainer.style.top = alarmPrompt.offsetHeight + 'px';
-    AIboxEl.style.visibility = "hidden";
-
-    createAlarmEl.onclick = handleAlarmBack;
-
-    positionAIBox();
-}
-
-function handleAlarmBack() {
-    const alarmsContainerEl = document.getElementById("alarmsContainer");
-        if (createAlarmInProgress === true) {
-            alarmsContainerEl.innerHTML = "";
-            document.getElementById("createImg").src = "src/add.png"
-            createAlarmInProgress = false;
-            // TODO: Add function to enumerate and render through all alarms
-        } else if (createAlarmInProgress === "repeatStage"){
-            createAlarmFunc();
-        } else {
-            createAlarmFunc();
-        }
-}
-
-function addAlarm(title, hour, minute, repeats) {
-    const AIboxEl = document.getElementById("AIbox");
-    const alarmBoxEl = document.getElementById("alarmBox");
-    
-    let previousAlarms = JSON.parse(localStorage.getItem("alarms"));
-    if (previousAlarms === null) localStorage.setItem("alarms", []);
-
-    if (repeats.length === 0 || repeats === null) {
-        repeats = [];
-    }
-
-    const now = new Date();
-    
-    const alarmId = `${now.getFullYear()}${now.getMonths}${now.getDate()}${now.getHours()}${now.getMinutes()}`;
-        
-    const payload = {
-        name:title,
-        time:`${hour}:${minute}`,
-        repeat:repeats,
-        id: alarmId
-    }
-
-    if (previousAlarms.length === 0 || previousAlarms === "") {
-        previousAlarms = [];
-    }
-    
-    previousAlarms.push(payload);
-
-    localStorage.setItem("alarms", JSON.stringify(previousAlarms));
-}
-
-function createAlarmFunc() {
-    const alarmsRepeatedEl = document.getElementById("alarmsRepeated");
-    alarmsRepeatedEl.style.visibility = "hidden";
-    createAlarmInProgress = true;
-    const promptTextEl = document.getElementById("promptText");
-    const alarmImg = document.getElementById("createImg");
-    const alarmsContainerEl = document.getElementById("alarmsContainer");
-    const alarmBoxEl = document.getElementById("alarmBox");
-    alarmsContainerEl.style.overflowX = "hidden";   
-
-    promptTextEl.textContent = "Create Alarm";
-    alarmImg.src = "src/back.png";
-                        
-    alarmsContainerEl.style.visibility = "visible";
-    alarmsContainerEl.innerHTML = "";
-    alarmsContainerEl.style.width = alarmBoxEl.offsetWidth;
-    
-    const timeContainerEl = document.createElement("div");
-    timeContainerEl.style.display = "flex";
-    timeContainerEl.style.flexDirection = "row";
-    timeContainerEl.style.position = "relative";
-    timeContainerEl.style.width = alarmsContainerEl.offsetWidth + 'px';
-    timeContainerEl.style.border = "0.7px solid gray";
-    timeContainerEl.style.backgroundColor = "black";
-    timeContainerEl.style.paddingTop = '3px';
-    timeContainerEl.style.paddingBottom = '3px';
-    const timePrompt = document.createElement("p"); 
-    timePrompt.style.display = "flex";
-    timePrompt.style.alignItems = "center";
-    timePrompt.style.marginLeft = "1em";
-    timePrompt.textContent = "Time";
-    timePrompt.style.backgroundColor = "black";
-    timePrompt.style.width = "4em";
-    timePrompt.style.color = "white";
-    timePrompt.style.height = "2.75em";
-    const timeSelector = document.createElement("input");
-    timeSelector.style.backgroundColor = "white";
-    timeSelector.style.color = "black";
-    const now = new Date();
-    const currentHour = String(now.getHours()).padStart(2,"0");
-    const currentMinute = String(now.getMinutes()).padStart(2,"0");
-    timeSelector.type = "Time";
-    timeSelector.value = `${currentHour}:${currentMinute}`;
-    timeSelector.style.width = "15em";
-    timeSelector.style.position = "absolute";
-    timeSelector.style.right = "1em"; 
-    timeSelector.style.height = "2.75em";
-    timeSelector.style.borderRadius = "2em";
-    timeSelector.style.paddingLeft = "0.5em";
-    timeSelector.style.paddingRight = "0.5em";
-    timeContainerEl.offsetHeight = timeSelector.offsetHeight + 3 + 'px';
-    timeContainerEl.appendChild(timePrompt);
-    timeContainerEl.appendChild(timeSelector);
-
-    alarmsContainerEl.appendChild(timeContainerEl);
-
-    const labelContainerEl = document.createElement("div");
-    labelContainerEl.style.display = "flex";
-    labelContainerEl.style.flexDirection = "row";
-    labelContainerEl.style.position = "relative";
-    labelContainerEl.style.width = alarmsContainerEl.offsetWidth + 'px';
-    labelContainerEl.style.border = "0.7px solid gray";
-    labelContainerEl.style.backgroundColor = "black";
-    labelContainerEl.style.paddingTop = '3px';
-    labelContainerEl.style.paddingBottom = '3px';
-    
-    const labelPromptEl = document.createElement("p");
-    labelPromptEl.style.display = "flex";
-    labelPromptEl.style.alignItems = "center";
-    labelPromptEl.style.marginLeft = "1em";
-    labelPromptEl.textContent = "Time";
-    labelPromptEl.style.backgroundColor = "black";
-    labelPromptEl.style.width = "4em";
-    labelPromptEl.style.color = "white";
-    labelPromptEl.style.height = "2.75em";
-    labelPromptEl.textContent = "Label";
-
-    const labelInput = document.createElement("input");
-    labelInput.style.backgroundColor = "white";
-    labelInput.placeholder = "Alarm";
-    labelInput.style.color = "black";
-    labelInput.style.width = "15em";
-    labelInput.style.position = "absolute";
-    labelInput.style.right = "1em"; 
-    labelInput.style.height = "2.75em";
-    labelInput.style.borderRadius = "2em";
-    labelInput.style.paddingLeft = "1em";
-
-    labelContainerEl.appendChild(labelPromptEl);
-    labelContainerEl.appendChild(labelInput);
-    alarmsContainerEl.appendChild(labelContainerEl);
-
-    const repeatContainerEl = document.createElement("div");
-    repeatContainerEl.style.display = "flex";
-    repeatContainerEl.style.flexDirection = "row";
-    repeatContainerEl.style.position = "relative";
-    repeatContainerEl.style.width = alarmsContainerEl.offsetWidth + 'px';
-    repeatContainerEl.style.border = "0.7px solid gray";
-    repeatContainerEl.style.backgroundColor = "black";
-    repeatContainerEl.style.padding = "0 0 0 0";
-    repeatContainerEl.style.height = labelPromptEl.offsetHeight + 'px';
-
-    const repeatButton = document.createElement("button");
-    repeatButton.style.border = "0px";
-    repeatButton.style.width = alarmsContainerEl.offsetWidth + 6 + 'px';
-    repeatButton.style.backgroundColor = "black";
-    repeatButton.style.cursor = "pointer";
-    repeatButton.style.transition = "background-color 0.2s ease";
-    repeatButton.addEventListener("mouseover", () => {
-        repeatButton.style.backgroundColor = "gray";
-    });
-    repeatButton.addEventListener("mouseout", () => {
-        repeatButton.style.backgroundColor = "black";
-    })
-    repeatButton.style.display = "flex";
-    repeatButton.style.flexDirection = "row";
-    repeatButton.style.color = "white";
-    const repeatPrompt = document.createElement("p");
-    repeatPrompt.style.display = "flex";
-    repeatPrompt.textContent = "Repeat";
-    repeatPrompt.style.alignItems = "center";
-    repeatButton.style.alignItems = "center";      
-
-
-    const repeatImg = document.createElement("img");
-    repeatImg.src = "src/enter.png";
-    repeatImg.style.height = "2em";
-    repeatImg.style.width = "2em";
-    repeatImg.style.position = "absolute";
-    repeatImg.style.right = "1px";
-    repeatButton.appendChild(repeatPrompt);
-    repeatButton.appendChild(repeatImg);
-    repeatContainerEl.appendChild(repeatButton);
-
-    repeatButton.onclick = () => {
-        if (alarmsRepeatedEl.style.visibility === "hiddden") {
-            alarmsRepeatedEl.style.position = "absolute";
-            alarmsRepeatedEl.style.left = alarmsContainerEl.offsetLeft + alarmsContainerEl.offsetWidth + 'px';
-            alarmsRepeatedEl.style.top = alarmBoxEl.offsetTop + repeatButton.offsetHeight * 3 + 'px';
-            alarmsRepeatedEl.style.visibility = "visible";
-        } else if (alarmsRepeatedEl.style.visibility === "visible") {
-            alarmsRepeatedEl.style.visibility = "hidden";
-        }
-    }   
-    
-
-    var repeated = [];
-    if (repeated.length === 0) {
-        repeatPrompt.textContent = "Repeat: None"
-    } else {
-        repeatPrompt.textContent = `Repeat: ${repeated.join(", ")}`;
-    }
-
-    alarmsContainerEl.appendChild(repeatContainerEl);
-}
-
 function updateClock() {
     const now = new Date();
     let hour = now.getHours().toString().padStart(2,"0");
@@ -1046,18 +815,16 @@ function positionWeather() {
 
 async function getLocation() {
     try {
-        const response = await fetch("https://ipwho.is", 
-            {
-                signal: AbortSignal.timeout(5000)
-            }
-        );                    
+
+        const response = await fetch(`https://ipapi.co/json`, {
+            signal: AbortSignal.timeout(5000)
+        });
         const data = await response.json();
 
         console.log(`Lat: ${data.latitude} Lon: ${data.longitude}`);
         getWeather(data.latitude, data.longitude);
     } catch (error) {
-        console.error("Failed to obtain lat and lon from https://ipwho.is: ", error);
-
+        console.error("Failed to obtain ip or lat and lon: ", error);
         getWeather();
     }
 
@@ -1140,6 +907,7 @@ async function getQuoteOfTheday() {
 
         quoteOfTheDayEl.textContent = `"${data.text}"`;
         quoteAuthorEl.textContent = `- ${data.author}`;
+        positionTodoBox();
     } catch (e) {
         console.log(`Failed to obtain quote: ${e}`);
         console.log("Fallback: Using quote from cache");
@@ -1153,8 +921,21 @@ async function getQuoteOfTheday() {
         quoteAuthorEl.textContent = `- ${data.author}`;
 
         alert("This device is currently in offline mode.");
+        positionTodoBox();
     }
     positionAIBox();
+}
+
+function positionTodoBox() {
+    const tcEl = document.getElementById("tc");
+    const todoBoxEl = document.getElementById("todoBox");
+
+    const rect = tcEl.getBoundingClientRect();
+    todoBoxEl.style.top = rect.top + rect.height + 25 + 'px';
+    todoBoxEl.style.left = window.innerWidth * 0.1 + 'px';
+    todoBoxEl.style.visibility = "visible";
+    todoBoxEl.style.width = rect.width + rect.width * 0.1 * 2 + 'px';
+    todoBoxEl.style.left = rect.left - (todoBoxEl.offsetWidth - rect.width) / 2 + 'px';
 }
 
 function initApp() {
@@ -1224,6 +1005,7 @@ function setupDone() {
         positionAIBox();
         getQuoteOfTheday();
         positionSettings();
+        positionTodoBox();
         return;
     }
 }
@@ -1231,8 +1013,6 @@ function setupDone() {
 function redirectToGitHub() {
     window.open("https://github.com/milo1004","_blank");
 }
-
-
 
 function updateGreeting() {
     const now = new Date();
