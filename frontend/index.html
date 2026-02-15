@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+    <html>
+        <head>
+            <title>
+                Piston AI
+            </title>
+            <link rel="icon" type="image/png" href="src/AI.png">
+            <style>
+                @font-face {
+                    font-family: "MiSans";
+                    src: url("MiSansRegular.ttf") format("truetype");
+                }
+
+                body, html {
+                    overflow: hidden;
+                    height: 100%;                
+                }
+
+                * {
+                    margin: 0;
+                    font-family: "MiSans", sans-serif;
+                    color: white;
+                    user-select: none;
+                    -webkit-user-select: none;
+                    -moz-user-select: none;
+                    -ms-user-select: none;
+                }
+
+                body {
+                    display: flex;
+                    visibility: hidden;
+                    background-image: url("src/wallpapers/gradient-1.jpg");
+                    margin: 3%;
+                    justify-content: center;
+                    overflow: hidden;
+                    overscroll-behavior-y: none;
+                    background-size: cover;
+                    background-repeat: no-repeat;
+                    background-position: center;
+                    transition: opacity 0.2s ease;
+                }
+
+                .greeting-h2 {
+                    font-size: 3em;
+                    position: absolute;
+                    font-weight: 400;
+                    border: 2px solid gray;
+                    border-radius: 10px;
+                    background-color:rgba(0, 0, 0, 0.185);
+                    backdrop-filter: blur(2px);
+                    padding-left: 0.5em;
+                    padding-right: 0.5em;
+                    box-shadow: 0 6px 20px rgba(0,0,0,0.8);
+                }
+
+                body.blur-active > *:not(#setUp-container) {
+                    filter: blur(5px);
+                    pointer-events: none;
+                }
+
+                .setUp-container {
+                    visibility: hidden;
+                    position: absolute;
+                    border: 2px solid gray;
+                    border-radius:  10%;
+                    margin: 5%;
+                    align-items: center;
+                    background-color: #363636;
+                    border: 2px solid gray;
+                    border-radius: 10px;
+                    padding: 1.5em;
+                    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+                    backdrop-filter: blur(3px);
+                    z-index: 1000;
+                    justify-content: center;
+                    align-items: center;
+                    padding: 5%;
+                    transition: opacity 0.2s ease;
+                }
+
+                #setup-input {
+                    border: 2px solid gray;
+                    border-radius: 10px;
+                    margin-top: 1.5em;
+                    height: 2em;
+                    color: white;
+                    background-color: #000000;
+                    padding-left: 3%;
+                }
+
+                #setup-done-btn {
+                    border: none;
+                    border-radius: 10px;
+                    margin-top: 1.5em;
+                    background-color: #0080ff;
+                    height: 2em;
+                    color: white;
+                    cursor: pointer;
+                    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+                    padding-right: 4%;
+                }
+
+                .credit {
+                    color: gray; font-size: x-small; position: fixed; bottom: 4px;
+                }
+
+                .credit:hover {
+                    text-decoration: underline; cursor: pointer;
+                }
+
+                .tc {
+                    border-radius: 10px;
+                    border: 2px solid gray;
+                    display: flex;
+                    justify-content: center;
+                    position: absolute;
+                    padding-left: 1em;
+                    padding-right: 1em;
+                    top: 10%;
+                    left: 10%;
+                    backdrop-filter: blur(3px);
+                    flex-direction: column;
+                    background-color: rgba(0, 0, 0, 0.185);
+                    box-shadow: 0 6px 20px rgba(0,0,0,0.8);
+                }
+
+                .h1-time {
+                    font-size: 5em;
+                    font-weight: 300;
+                } 
+
+                #temp {
+                    font-size: 5em;
+                    font-weight: 300;
+                    color: #a6ff01;
+                    margin-bottom: 10px;
+                }
+
+                .weather {
+                    border-radius: 10px;
+                    border: 2px solid gray;
+                    display: flex;
+                    justify-content: center;
+                    position: absolute;
+                    padding-left: 1em;
+                    padding-right: 1em;
+                    top: 10%;
+                    right: 10%;
+                    flex-direction: column;
+                    background-color: rgba(0,0,0,0.1);
+                    backdrop-filter: blur(3px);
+                    box-shadow: 0 6px 20px rgba(0,0,0,0.8);
+                }
+
+                .startSTT {
+                    border: 1.5px solid gray;
+                    border-radius: 10em;
+                    position: absolute;
+                    bottom: 10px;
+                    right: 10px;
+                    height: 45px;
+                    width: 45px;
+                    background-size: cover;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    transition: 
+                        background-color 0.2s ease,
+                        opacity 0.2s ease;
+                    backdrop-filter: blur(3px);
+                }
+
+                #sendBtn {
+                    border: 1.5px solid gray;
+                    border-radius: 10em;
+                    position: absolute;
+                    bottom: 10px;
+                    height: 40px;
+                    width: 40px;
+                    background-size: cover;
+                    background-color: black;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    transition: 
+                        background-color 0.2s ease,
+                        opacity 0.2s ease;
+                    z-index: 7;
+                    opacity: 100%;
+                }
+
+                #sendBtn:hover {
+                    cursor: pointer;
+                    background-color: gray;
+                }
+
+                #sendBtn:disabled {
+                    cursor: not-allowed;
+                    opacity: 20%;
+                }
+
+                .startSTT:hover {
+                    cursor: pointer;
+                    background-color: gray;
+                }
+
+                .startSTT:disabled {
+                    cursor: not-allowed;
+                    opacity: 20%;
+                }
+
+                .abortSTT {
+                    border: 2px solid gray;
+                    border-radius: 10em;
+                    position: absolute;
+                    bottom: 10px;
+                    right: 10px;
+                    height: 45px;
+                    width: 45px;
+                    background-size: cover;
+                    background-color: #000000;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    transition:
+                        background-color 0.2s ease,
+                        opacity 0.2s ease;
+                    visibility: hidden;
+                }
+
+                .abortSTT:hover {
+                    background-color: gray;
+                    cursor: pointer;
+                }
+
+                #speechRecDiv {
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                #SRHint {
+                    background-color: white;
+                    border: 3px ;
+                    visibility: visible;
+                    color: black;
+                    border-radius: 3px;
+                    padding: 3px;
+                    position: absolute;
+                    right: 10px;
+                    visibility: hidden;
+
+                    transform: translateY(5px);
+
+                    transition: 
+                        opacity 0.25s ease,
+                        transform 0.25s ease;
+                }
+
+                #SRHint.show {
+                    opacity: 1;
+                    visibility: visible;
+                    transform: translateY(0);
+                    z-index: 1000;
+                }
+
+                #AIbox {
+                    border: 1.5px solid gray;
+                    border-radius: 20px;
+                    padding-left: 5%;
+                    padding-right: 5%;
+                    visibility: hidden;
+                    display: flex;
+                    flex-direction: column;
+                    position: absolute;
+                    justify-content: center;
+                    align-items: center;
+                    overflow-y: auto;
+                    z-index: 5;
+                    width: 30%;
+                    height: 50%;
+                    backdrop-filter: blur(3px);
+                    background-color: rgba(66, 66, 66, 0.037);
+                    transition: 
+                        backdrop-filter 0.2s ease,
+                        transform 0.2s ease,
+                        background-color 0.2s ease;
+                    overscroll-behavior-y: auto;
+                    overscroll-behavior-x: none;
+                    box-shadow: 0 6px 20px rgb(0,0,0,0.8);
+                }
+
+                #AIbox:hover {
+                    cursor: pointer;
+                    backdrop-filter: blur(5px);
+                    background-color: rgba(112, 112, 112, 0.473);
+                }
+
+                #manIn {
+                    border: 2px solid gray;
+                    border-radius: 10em;
+                    position: absolute;
+                    bottom: 10px;
+                    width: 25em;
+                    height: 50px;
+                    padding-left: 10px;
+                    color: black;
+                    z-index: 6;
+                    box-sizing: border-box;
+                    transition:
+                        opacity 0.2s ease;    
+                }
+
+                #manIn:disabled {
+                    cursor: not-allowed;
+				}
+
+                #quoteOfTheDay {
+                    font-style: italic;
+                    color: white;
+                    user-select: text;
+                    margin-right: 5px;
+                }
+
+                #quoteAuthor {
+                    color: rgba(231, 231, 231, 0.482);
+                }
+
+                .pistonSettings {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 3.5em;
+                    height: 3.5em;
+                    border: 1.5px solid gray;
+                    border-radius: 2em;
+                    background-color: rgba(0,0,0,0.3);
+                    position: absolute;
+                    right: 1em;
+                    top: 1em;
+                    cursor: pointer;
+                    opacity: 100%;
+                    rotate: 0deg;
+                    transition: opacity 0.2s ease, background-color 0.2s ease, rotate 1s ease;
+                }
+
+                .pistonSettings:hover {
+                    opacity: 50%;
+                    background-color: gray;
+                }
+
+                #settingsContainer {
+                    visibility: hidden;
+                    position: absolute;
+                    border: 1px solid gray;
+                    backdrop-filter: blur(3px);
+                    background-color:rgba(0, 0, 0, 0.525);
+                    border-radius: 10px;
+                    overflow-x: hidden;
+                    right: 1em;
+                    box-shadow: 0 0 10px 2px rgb(0, 0, 0, 0.8);
+                    transition: opacity 0.5s ease-in-out;
+                    opacity: 0%;
+                    overflow-y: auto;
+                }
+
+                #wallpapersContainer {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 0.5em;
+                    padding-left: 0.5em;
+                    padding-top: 0.5em;
+                    padding-bottom: 0.5em;
+                }
+
+                #memoryAddNoti {
+                    border: 1px solid gray;
+                    border-radius: 10px;
+                    background-color: rgba(0,0,0,0.5);
+                    backdrop-filter: blur(3px);
+                    padding-left: 5em;
+                    padding-right: 5em;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    height: 6em;
+                    overflow-y:auto;
+                    visibility: hidden;
+                    padding-top: 0.5em;
+                    transition: transform 0.5s ease-in-out;
+                    z-index: 1200;
+                }
+
+                #memorydescription {
+                    color: white;
+                    font-size: medium;
+                }
+
+                #todoBox {
+                    display: flex;
+                    flex-direction: column;
+                    visibility: hidden;
+                    background-color: rgba(0, 0, 0, 0.185);
+                    backdrop-filter: blur(5px);
+                    border: 1px solid gray;
+                    border-radius: 20px;
+                    height: 45%;
+                    box-shadow: 0 6px 20px, (rgba(0, 0, 0, 0.8));
+                    position: absolute;
+                }
+
+            </style>
+        </head>
+        <body>
+            <h1 class="greeting-h2" id="greeting">
+                Welcome back!
+            </h1>
+            <div class="setUp-container" id="setUp-container">
+                <h3>Setup Piston AI</h3>
+                <p><br>What should we call you?</p>
+                <input type="text" id="setup-input" value="" placeholder="Your name here">
+                <br>
+                <button id="setup-done-btn" onclick="setupDone()"><p>Done :&#41</p></button>
+                <p id="setup-warning" style="color: red; font-size: x-small; margin-top: 0.5em; visibility: hidden; z-index: 1001;"></p>
+            </div>
+            <div id="tc" class="tc">
+                <div style="display: flex; margin-bottom:10px;">            
+                    <h1 id="hour" class="h1-time">--</h1>
+                    <h1 class="h1-time" id="colon">:</h1>
+                    <h1 id="minute" class="h1-time">--</h1>
+                </div>
+                <div id="dc" style="display: flex; flex-direction: row; ">
+                    <h1 id="weekday" style="color: #a6ff01">--</h1>
+                    <div>&nbsp&nbsp</div>
+                    <h1 id="date">--</h1>
+                </div>
+                <div id="qotd">
+                    <p id="quoteOfTheDay"></p>
+                    <p id="quoteAuthor"></p>
+                </div>
+            </div>
+            <div id="weather" class="weather">
+                <h1 class="h1-time" id="temp">--°C</h1>
+                <div style="display: flex; flex-direction: row;" id="weatherInfo">
+                    <img src="src/noData.png" id="weatherData" draggable="false">
+                    <h1>&nbsp</h1>
+                    <h1 id="weatherText" style="font-weight: 600">No data</h1>
+                </div>
+            </div>
+            <div id="todoBox">
+                <h1>To-Do</h1>
+                <div></div>
+            </div>
+            <div id="speechRecDiv">
+                <div id="SRHint">
+                    <p id="SRHintTxt" style="color: black">Press to start speech recognition</p>
+                </div>
+                <button class="startSTT" id="startSTT" onclick="">
+                    <img id="startSTTImg" src="src/STT.png" style="height: 80%;" draggable="false">
+                </button>
+                <input id="manIn" placeholder="Ask Piston AI">
+                <button class="startSTT" id="sendBtn">
+                    <img id="sendBtnImg" src="src/send.png" style="height: 80%;" draggable="false">
+                </button> 
+                <button id="abortSTT" class="abortSTT">
+                    <img src="src/abort.png" draggable="false" style="height: 80%">
+                </button>
+            </div>
+            <div id="AIbox"></div>
+            <button id="pistonSettings" class="pistonSettings">
+                <img src="src/settings.png" style="width: 2em; height: 2em">
+            </button>
+            <div id="settingsContainer">
+                <h1 style="margin-left: 0.35em; font-weight: 250;">Themes</h1>
+                <div id="wallpapersContainer">
+                </div>  
+            </div>
+            <div id="memoryAddNoti">
+                <h2 style="font-weight: 600; color: white;">Memory added</h2>
+                <p id="memorydescription"></p>
+            </div>
+            <p class="credit" onclick="redirectToGitHub()">Brought to you by Milo Chan</p>
+            <script src="src.js"></script>
+        </body>
+    </html>
