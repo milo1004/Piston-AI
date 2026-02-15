@@ -863,11 +863,11 @@ async function getWeather(lat, lon) {
             signal: AbortSignal.timeout(5000)
         });
         const data = await response.json();
+        console.log(data);
 
         const temp = data.current_weather.temperature.toString();
         const code = codes[data.current_weather.weathercode];
         const tempUnit = data.current_weather_units.temperature;
-        console.log(data)
 
         const tempEl = document.getElementById("temp");
         const weatherText = document.getElementById("weatherText");
