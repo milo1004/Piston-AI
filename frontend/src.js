@@ -935,10 +935,99 @@ function positionTodoBox() {
 
     const rect = tcEl.getBoundingClientRect();
     todoBoxEl.style.top = rect.top + rect.height + 25 + 'px';
-    todoBoxEl.style.left = window.innerWidth * 0.1 + 'px';
     todoBoxEl.style.visibility = "hidden";
     todoBoxEl.style.width = rect.width + rect.width * 0.1 * 2 + 'px';
-    todoBoxEl.style.left = rect.left - (todoBoxEl.offsetWidth - rect.width) / 2 + 'px';
+    todoBoxEl.style.left = rect.left - ((todoBoxEl.getBoundingClientRect().width - rect.width) / 2) + 'px';
+    if (todoBoxEl.getBoundingClientRect().left + todoBoxEl.getBoundingClientRect().width > document.getElementById("AIbox").getBoundingClientRect().left) {
+        todoBoxEl.style.left = document.getElementById("AIbox").getBoundingClientRect().left - todoBoxEl.getBoundingClientRect().width - 15 + 'px';
+    }
+
+    todoBoxEl.style.visibility = "visible";
+    const createReminderEl = document.getElementById("createReminder");
+    createReminderEl.style.left = createReminderEl.offsetLeft - createReminderEl.offsetWidth - 16 + 'px';
+    renderTasks();
+}
+
+function renderTasks() {
+    const todoListEl = document.getElementById("todoList");
+    let tasks = JSON.parse(localStorage.getItem("todoList"));
+    if (!tasks || tasks.length === 0) {
+        localStorage.setItem("todoList", "[]");
+        todoListEl.style.alignItems = "center";
+        todoListEl.style.justifyItems = "center";
+        todoListEl.textContent = "All tasks done! Yay!";
+        return;
+    } 
+    todoListEl.innerHTML = "";
+    for (const [idx, item] of tasks.entries()) {
+        const itemContainer = document.createElement("div");
+        itemContainer.style.display = "flex";
+        itemContainer.style.flexDirection = "row";
+        itemContainer.style.overflow = "hidden";
+        itemContainer.style.backgroundColor = "rgba(0,0,0,0.05)";
+        itemContainer.style.backdropFilter = "blur(3px)";
+        itemContainer.style.border = "1px solid gray";
+        itemContainer.style.borderRadius = "10px";
+        itemContainer.style.padding = "0.3em 0 0.3em 0.3em";
+        itemContainer.style.transition = "background-color 0.2s ease-in-out";
+        itemContainer.style.gap = "1em";
+        itemContainer.addEventListener("mouseover", () => {
+            itemContainer.style.backgroundColor = "rgba(0,0,0,0.3)";
+        })
+        itemContainer.addEventListener("mouseout", () => {
+            itemContainer.style.backgroundColor = "rgba(0,0,0,0.05)";
+        })
+
+        const infoContainerEl = document.createElement("div");
+        infoContainerEl.style.display = "flex";
+        infoContainerEl.style.flexDirection = "column";
+        const checkEl = document.createElement("input");
+        checkEl.type = "checkbox";
+        checkEl.addEventListener("change", () => {
+            if (checkEl.checked) {
+                waitForConf = setTimeout(() => {
+                    tasks.splice(idx,1);  
+                    localStorage.setItem("todoList", JSON.stringify(tasks));
+                    itemContainer.style.transition = "opacity 0.2s ease";
+                    itemContainer.style.opacity = "0";
+                    itemContainer.offsetHeight; // element reflow
+                    itemContainer.addEventListener("transitionend", () => {
+                        itemContainer.style.visibility = "hidden";
+                        renderTasks();
+                    })
+                }, 2500);
+            } else if (!checkEl.checked) {
+                clearTimeout(waitForConf);
+            }
+        })
+        itemContainer.appendChild(checkEl);
+        if (!("Title" in item)) {
+            continue;
+        } else {
+            const itemTitleEl = document.createElement("h3");
+            itemTitleEl.textContent = item.Title;
+            itemTitleEl.style.color = "white";
+            itemTitleEl.style.fontWeight = "350";
+            infoContainerEl.appendChild(itemTitleEl); 
+        } 
+        if ("Description" in item) {
+            const itemDescEl = document.createElement("h4");
+            itemDescEl.textContent = " " + item.Description;
+            itemDescEl.style.color = "gray";
+            itemDescEl.style.fontWeight = "300";
+            infoContainerEl.appendChild(itemDescEl);
+        }
+        if ("Deadline" in item) {
+            const itemDescEl = document.createElement("p");
+            itemDescEl.textContent = `Deadline: ${item.Deadline}`;
+            itemDescEl.style.color = "gray";
+            itemDescEl.style.fontWeight = "300";
+            infoContainerEl.appendChild(itemDescEl);
+        }
+
+        todoListEl.appendChild(itemContainer);
+        itemContainer.appendChild(infoContainerEl);
+    }
 }
 
 function initApp() {
@@ -961,6 +1050,7 @@ function initApp() {
         getQuoteOfTheday();
         positionSettings();
         updateGreeting();
+        renderTasks();
         setInterval(() => {
             getLocation();
             updateGreeting();
