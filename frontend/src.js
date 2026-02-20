@@ -940,12 +940,82 @@ function positionTodoBox() {
     todoBoxEl.style.left = rect.left - ((todoBoxEl.getBoundingClientRect().width - rect.width) / 2) + 'px';
     if (todoBoxEl.getBoundingClientRect().left + todoBoxEl.getBoundingClientRect().width > document.getElementById("AIbox").getBoundingClientRect().left) {
         todoBoxEl.style.left = document.getElementById("AIbox").getBoundingClientRect().left - todoBoxEl.getBoundingClientRect().width - 15 + 'px';
-    }
+    }    
 
     todoBoxEl.style.visibility = "visible";
     const createReminderEl = document.getElementById("createReminder");
     createReminderEl.style.left = createReminderEl.offsetLeft - createReminderEl.offsetWidth - 16 + 'px';
+    window.createReminderState = false;
+    createReminderEl.onclick = () => {
+        if (!createReminderState) {
+            createReminderState = true;
+            const createReminderImgEl = document.getElementById("createReminderImg");
+            createReminderImgEl.style.rotate = "45deg"
+            createReminderImg.addEventListener("transitionend", () => {
+                createReminder();
+            })
+        } else {
+            createReminderState = false;
+            const createReminderImg = document.getElementById("createReminderImg");
+            createReminderImg.style.rotate = "0deg";
+            createReminderImg.addEventListener("transitionend", () => {
+                removeReminder();
+            });
+        }
+    }
     renderTasks();
+}
+
+function removeReminder() {
+    const todoListEl = document.getElementById("todoList");
+    todoListEl.innerHTML = "";
+    renderTasks();
+}
+
+function createReminder() {
+    const todoListEl = document.getElementById("todoList");
+    todoListEl.innerHTML = "";
+    todoListEl.textContent = "";
+    const inputFields = document.createElement("div");
+    inputFields.style.display = "flex";
+    inputFields.style.backgroundColor = "white";
+    inputFields.style.border = "none";
+    inputFields.style.borderRadius = "16px";
+    inputFields.style.justifyContent = "center";
+    inputFields.style.alignItems = "center";
+    inputFields.style.flexDirection = "column";
+    inputFields.style.overflowX = "hidden";
+    inputFields.style.overflowY = "hidden";
+    inputFields.style.width = "90%";
+
+    const titleField = documxent.createElement("input");
+    titleField.style.border = "none";
+    titleField.placeholder = "Title";
+    titleField.style.width = "100%";
+    titleField.style.height = "2.5em";
+    titleField.style.padding = "0 0.5em 0 0.5em";
+    titleField.style.boxSizing = "border-box";
+    titleField.style.color = "black";
+
+    const separatorEl = document.createElement("hr");
+    separatorEl.style.height = "1px";
+    separatorEl.style.width = "95%";
+    separatorEl.style.backgroundColor = "rgba(0,0,0,0.5)";
+    separatorEl.style.border = "none";
+
+    const descriptionField = document.createElement("input");
+    descriptionField.style.border = "100%";
+    descriptionField.placeholder = "Description";
+    descriptionField.style.border = "none";
+    descriptionField.style.width = "100%";
+    descriptionField.style.height = "2.5em";
+    descriptionField.style.padding = "0 0.5em 0 0.5em";
+    descriptionField.style.boxSizing = "border-box";
+
+    inputFields.appendChild(titleField);
+    inputFields.appendChild(separatorEl);
+    inputFields.appendChild(descriptionField);
+    todoListEl.appendChild(inputFields);
 }
 
 function renderTasks() {
@@ -990,7 +1060,7 @@ function renderTasks() {
                     localStorage.setItem("todoList", JSON.stringify(tasks));
                     itemContainer.style.transition = "opacity 0.2s ease";
                     itemContainer.style.opacity = "0";
-                    itemContainer.offsetHeight; // element reflow
+                    itemContainer.offsetHeight;
                     itemContainer.addEventListener("transitionend", () => {
                         itemContainer.style.visibility = "hidden";
                         renderTasks();
