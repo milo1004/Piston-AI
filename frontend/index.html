@@ -102,10 +102,17 @@
 
                 .credit {
                     color: gray; font-size: x-small; position: fixed; bottom: 4px;
+                    background-color: none;
+                    padding: 0.25em 0.25em 0.25em 0.25em;
+                    border-radius: 1em;
+                    transition: background-color 0.2s ease;
                 }
 
                 .credit:hover {
-                    text-decoration: underline; cursor: pointer;
+                    padding: 0.25em 0.25em 0.25em 0.25em;
+                    cursor: pointer;
+                    backdrop-filter: blur(2px);
+                    background-color: rgba(0, 0, 0, 0.3);
                 }
 
                 .tc {
@@ -447,6 +454,11 @@
 
                 #createReminder:hover {
                     background-color: rgba(0,0,0,0.6);
+                }
+
+                .saveReminderDisabled {
+                    cursor: not-allowed;
+                    opacity: 20%;
                 }
             </style>
         </head>

@@ -462,7 +462,8 @@ window.addEventListener("resize", () => {
     positionAbort();
     positionAIBox();
     positionSettings();
-    positionTodoBox();
+    positionTodoBox(true);
+    autoRemoveTasks();
 })
 
 const setupInputEl = document.getElementById("setup-input");
@@ -617,7 +618,7 @@ async function askPiston(uInput) {
         saveHistory(roles="user", message=uInput);
         let memory = `You have access to the memory below: \n The user's name is ${localStorage.getItem("username")}, ${JSON.stringify(localStorage.getItem("memory"))}`;
         const now = new Date(); 
-        let AdditionalData = `Additional data: \nweather data:${localStorage.getItem("weatherData")}\ndate (DD/MM/YYYY): ${now.getDate().toString().padStart(2,"0")}/${now.getMonth().toString().padStart(2,"0")}/${now.getFullYear}\ntime (hour:minute): ${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
+        let AdditionalData = `Additional data: \nweather data:${localStorage.getItem("weatherData")}\ndate (DD/MM/YYYY): ${now.getDate().toString().padStart(2,"0")}/${now.getMonth().toString().padStart(2,"0")}/${now.getFullYear}\ntime (hour:minute): ${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}\nuser todo list:${localStorage.getItem("todoList")}`;
         const result = await fetch("https://piston-ai.chanyanyan3205.workers.dev", {
             method: "POST",
             headers: {
@@ -929,7 +930,7 @@ async function getQuoteOfTheday() {
     positionAIBox();
 }
 
-function positionTodoBox() {
+function positionTodoBox(resize) {
     const tcEl = document.getElementById("tc");
     const todoBoxEl = document.getElementById("todoBox");
 
@@ -940,27 +941,19 @@ function positionTodoBox() {
     todoBoxEl.style.left = rect.left - ((todoBoxEl.getBoundingClientRect().width - rect.width) / 2) + 'px';
     if (todoBoxEl.getBoundingClientRect().left + todoBoxEl.getBoundingClientRect().width > document.getElementById("AIbox").getBoundingClientRect().left) {
         todoBoxEl.style.left = document.getElementById("AIbox").getBoundingClientRect().left - todoBoxEl.getBoundingClientRect().width - 15 + 'px';
-    }    
+    }
 
     todoBoxEl.style.visibility = "visible";
-    const createReminderEl = document.getElementById("createReminder");
-    createReminderEl.style.left = createReminderEl.offsetLeft - createReminderEl.offsetWidth - 16 + 'px';
-    window.createReminderState = false;
-    createReminderEl.onclick = () => {
-        if (!createReminderState) {
-            createReminderState = true;
-            const createReminderImgEl = document.getElementById("createReminderImg");
-            createReminderImgEl.style.rotate = "45deg"
-            createReminderImg.addEventListener("transitionend", () => {
+    if (!resize) {
+        const createReminderEl = document.getElementById("createReminder");
+        createReminderEl.style.left = createReminderEl.offsetLeft - createReminderEl.offsetWidth - 16 + 'px';
+        window.createReminderState = false;
+        createReminderEl.onclick = () => {
+            if (!createReminderState) {
                 createReminder();
-            })
-        } else {
-            createReminderState = false;
-            const createReminderImg = document.getElementById("createReminderImg");
-            createReminderImg.style.rotate = "0deg";
-            createReminderImg.addEventListener("transitionend", () => {
+            } else {
                 removeReminder();
-            });
+            }
         }
     }
     renderTasks();
@@ -968,57 +961,212 @@ function positionTodoBox() {
 
 function removeReminder() {
     const todoListEl = document.getElementById("todoList");
-    todoListEl.innerHTML = "";
-    renderTasks();
+    createReminderState = false;
+    const createReminderImg = document.getElementById("createReminderImg");
+    createReminderImg.style.rotate = "0deg";
+    createReminderImg.addEventListener("transitionend", () => {
+        todoListEl.innerHTML = "";
+        renderTasks();
+    });
 }
 
 function createReminder() {
-    const todoListEl = document.getElementById("todoList");
-    todoListEl.innerHTML = "";
-    todoListEl.textContent = "";
-    const inputFields = document.createElement("div");
-    inputFields.style.display = "flex";
-    inputFields.style.backgroundColor = "white";
-    inputFields.style.border = "none";
-    inputFields.style.borderRadius = "16px";
-    inputFields.style.justifyContent = "center";
-    inputFields.style.alignItems = "center";
-    inputFields.style.flexDirection = "column";
-    inputFields.style.overflowX = "hidden";
-    inputFields.style.overflowY = "hidden";
-    inputFields.style.width = "90%";
+    createReminderState = true;
+    const createReminderImgEl = document.getElementById("createReminderImg");
+    createReminderImgEl.style.rotate = "45deg"
+    createReminderImg.addEventListener("transitionend", () => {
+        const todoListEl = document.getElementById("todoList");
+        todoListEl.innerHTML = "";
+        todoListEl.textContent = "";
+        const inputFields = document.createElement("div");
+        inputFields.style.display = "flex";
+        inputFields.style.backgroundColor = "white";
+        inputFields.style.border = "none";
+        inputFields.style.borderRadius = "13px";
+        inputFields.style.justifyContent = "center";
+        inputFields.style.alignItems = "center";
+        inputFields.style.flexDirection = "column";
+        inputFields.style.overflowX = "hidden";
+        inputFields.style.overflowY = "hidden";
+        inputFields.style.width = "90%";
 
-    const titleField = documxent.createElement("input");
-    titleField.style.border = "none";
-    titleField.placeholder = "Title";
-    titleField.style.width = "100%";
-    titleField.style.height = "2.5em";
-    titleField.style.padding = "0 0.5em 0 0.5em";
-    titleField.style.boxSizing = "border-box";
-    titleField.style.color = "black";
+        const saveReminder = document.createElement("button");
+        saveReminder.style.border = "none";
+        saveReminder.textContent = "Save task";
+        saveReminder.style.borderRadius = "10px";
+        saveReminder.style.color = "black";
+        saveReminder.style.backgroundColor = "white";
+        saveReminder.style.padding = "1px 0.5em 1px 0.5em";
+        saveReminder.style.cursor = "pointer";
+        saveReminder.style.opacity = "100%";
+        saveReminder.style.fontSize = "1em";
+        saveReminder.style.width = "90%";
+        saveReminder.style.transition = "opacity 0.2s ease-in-out";
+        saveReminder.addEventListener("hover", () => {
+            saveReminder.style.opacity = "60%";
+        })
+        saveReminder.disabled = true;
+        saveReminder.style.cursor = "not-allowed";
+        saveReminder.style.opacity = "20%";
 
-    const separatorEl = document.createElement("hr");
-    separatorEl.style.height = "1px";
-    separatorEl.style.width = "95%";
-    separatorEl.style.backgroundColor = "rgba(0,0,0,0.5)";
-    separatorEl.style.border = "none";
+        const titleField = document.createElement("input");
+        titleField.style.border = "none";
+        titleField.placeholder = "Title";
+        titleField.style.width = "100%";
+        titleField.style.height = "2.5em";
+        titleField.style.padding = "0 0.5em 0 0.5em";
+        titleField.style.boxSizing = "border-box";
+        titleField.style.color = "black";
 
-    const descriptionField = document.createElement("input");
-    descriptionField.style.border = "100%";
-    descriptionField.placeholder = "Description";
-    descriptionField.style.border = "none";
-    descriptionField.style.width = "100%";
-    descriptionField.style.height = "2.5em";
-    descriptionField.style.padding = "0 0.5em 0 0.5em";
-    descriptionField.style.boxSizing = "border-box";
+        const warningTitleField = document.createElement("p");
+        warningTitleField.style.color = "red";
+        warningTitleField.style.visibility = "hidden";
+        warningTitleField.textContent = "Title cannot be empty.";
+        warningTitleField.style.fontSize = "0.85em";
+        warningTitleField.style.borderRadius = "10px";
+        warningTitleField.style.backdropFilter = "blur(3px)";
+        warningTitleField.style.backgroundColor = "rgba(0,0,0,0.135)";
+        warningTitleField.style.padding = "1px 1em 1px 1em";
+        titleField.addEventListener("input", () => {
+            if (!(titleField.value.replace(/\s+/g, "")) || !titleField.value) {
+                warningTitleField.style.visibility = "visible";
+                saveReminder.disabled = true;
+                saveReminder.style.cursor = "not-allowed";
+                saveReminder.style.opacity = "20%";
+            } else {
+                warningTitleField.style.visibility = "hidden";
+                saveReminder.disabled = false;
+                saveReminder.style.cursor = "pointer";
+                saveReminder.style.opacity = "100%";
+            }
+        })
 
-    inputFields.appendChild(titleField);
-    inputFields.appendChild(separatorEl);
-    inputFields.appendChild(descriptionField);
-    todoListEl.appendChild(inputFields);
+        const descriptionField = document.createElement("input");
+        descriptionField.style.border = "100%";
+        descriptionField.placeholder = "Description";
+        descriptionField.style.border = "none";
+        descriptionField.style.width = "100%";
+        descriptionField.style.height = "2.5em";
+        descriptionField.style.padding = "0 0.5em 0 0.5em";
+        descriptionField.style.boxSizing = "border-box";
+        descriptionField.style.color = "black";
+
+        const separatorEl = document.createElement("hr");
+        separatorEl.style.height = "1px";
+        separatorEl.style.width = "95%";
+        separatorEl.style.backgroundColor = "rgba(0,0,0,0.5)";
+        separatorEl.style.border = "none";
+        
+        const urlField = document.createElement("input");
+        urlField.style.border = "100%";
+        urlField.placeholder = "URL";
+        urlField.style.border = "none";
+        urlField.style.width = "100%";
+        urlField.style.height = "2.5em";
+        urlField.style.padding = "0 0.5em 0 0.5em";
+        urlField.style.boxSizing = "border-box";
+        urlField.style.color = "black";
+
+        const deadLineContainer = document.createElement("div");
+        deadLineContainer.style.display = "flex";
+        deadLineContainer.style.backgroundColor = "white";
+        deadLineContainer.style.border = "none";
+        deadLineContainer.style.borderRadius = "13px";
+        deadLineContainer.style.flexDirection = "column";
+        deadLineContainer.style.overflowX = "hidden";
+        deadLineContainer.style.overflowY = "hidden";
+        deadLineContainer.style.width = "90%";
+        deadLineContainer.style.textAlign = "center";
+
+        const deadLineHint = document.createElement("p");
+        deadLineHint.style.color = "black";
+        deadLineHint.textContent = "Deadline";
+        deadLineHint.style.fontSize = "0.85em";
+        deadLineHint.style.padding = "5px 1em 1px 1em";
+
+        const deadLineSeparator = document.createElement("hr");
+        deadLineSeparator.style.height = "1px";
+        deadLineSeparator.style.width = "95%";
+        deadLineSeparator.style.backgroundColor = "rgba(0,0,0,0.5)";
+        deadLineSeparator.style.border = "none";
+        deadLineSeparator.style.margin = "0 auto";
+
+        const deadLineField = document.createElement("input");
+        deadLineField.type = "date";
+        deadLineField.style.border = "100%";
+        deadLineField.style.border = "none";
+        deadLineField.style.height = "2.5em";
+        deadLineField.style.padding = "0 0.5em 0 0.5em";
+        deadLineField.style.boxSizing = "border-box";
+        deadLineField.style.color = "black";
+        deadLineField.style.borderRadius = "13px"
+        deadLineField.style.width = "100%";
+        deadLineContainer.appendChild(deadLineHint);
+        deadLineContainer.appendChild(deadLineSeparator);
+        deadLineContainer.appendChild(deadLineField);
+        const now = new Date();
+
+        const warningDeadLineEl = document.createElement("p");
+        warningDeadLineEl.style.color = "red";
+        warningDeadLineEl.style.visibility = "hidden";
+        warningDeadLineEl.textContent = "Deadline must be set to today or after.";
+        warningDeadLineEl.style.fontSize = "0.85em";
+        warningDeadLineEl.style.borderRadius = "10px";
+        warningDeadLineEl.style.backdropFilter = "blur(3px)";
+        warningDeadLineEl.style.backgroundColor = "rgba(0,0,0,0.135)";
+        warningDeadLineEl.style.padding = "1px 1em 1px 1em";
+        deadLineField.addEventListener("change", () => {
+            const sel = new Date(deadLineField.value);
+            if (!sel) return;
+            const today = now.setHours(0,0,0,0);
+            
+            if (sel < today) {
+                warningDeadLineEl.style.visibility = "visible";
+            } else if (sel > today) {
+                warningDeadLinesEl.style.visibility = "hidden";
+            }
+        })
+        
+        saveReminder.onclick = () => {
+            appendReminder(titleField.value, descriptionField.value, urlField.value, deadLineField.value);
+        }
+
+        inputFields.appendChild(titleField);
+        inputFields.appendChild(descriptionField);
+        inputFields.appendChild(separatorEl);
+        inputFields.appendChild(urlField);
+        todoListEl.appendChild(inputFields);
+        todoListEl.appendChild(warningTitleField);
+        todoListEl.appendChild(deadLineContainer);
+        todoListEl.appendChild(warningDeadLineEl);
+        todoListEl.appendChild(saveReminder);
+    });
+}
+
+function appendReminder(title, description, url, deadline) {
+    let reminders = localStorage.getItem("todoList");
+    if (!reminders) {
+        localStorage.setItem("todoList", "[]");
+        reminders = [];
+    } else {
+        reminders = JSON.parse(reminders);
+    }
+    if (!title) { return };
+    const payload = {
+        Title: title,
+        Description: description,
+        URL: url,
+        Deadline: deadline
+    }
+
+    reminders.push(payload);
+    localStorage.setItem("todoList",JSON.stringify(reminders));
+
+    removeReminder();
 }
 
 function renderTasks() {
+    createReminderState = false;
     const todoListEl = document.getElementById("todoList");
     let tasks = JSON.parse(localStorage.getItem("todoList"));
     if (!tasks || tasks.length === 0) {
@@ -1051,6 +1199,8 @@ function renderTasks() {
         const infoContainerEl = document.createElement("div");
         infoContainerEl.style.display = "flex";
         infoContainerEl.style.flexDirection = "column";
+        infoContainerEl.style.overflowX = "auto";
+        infoContainerEl.style.overflowY = "auto";
         const checkEl = document.createElement("input");
         checkEl.type = "checkbox";
         checkEl.addEventListener("change", () => {
@@ -1081,23 +1231,65 @@ function renderTasks() {
             infoContainerEl.appendChild(itemTitleEl); 
         } 
         if ("Description" in item) {
-            const itemDescEl = document.createElement("h4");
-            itemDescEl.textContent = " " + item.Description;
-            itemDescEl.style.color = "gray";
-            itemDescEl.style.fontWeight = "300";
-            infoContainerEl.appendChild(itemDescEl);
+            if (item.Description) {
+                const itemDescEl = document.createElement("h4");
+                itemDescEl.textContent = " " + item.Description;
+                itemDescEl.style.color = "gray";
+                itemDescEl.style.fontWeight = "300";
+                infoContainerEl.appendChild(itemDescEl);
+            }
         }
+        
+        if ("URL" in item) {
+            if (item.URL) {
+                const itemURLEl = document.createElement("p");
+                itemURLEl.textContent = `${location.protocol}//${item.URL}`;
+                itemURLEl.style.cursor = "pointer";
+                itemURLEl.style.textDecoration = "underline";
+                itemURLEl.addEventListener("click", () => {
+                    window.open(`${location.protocol}//${item.URL}`,"_blank");
+                })
+                itemURLEl.style.color = "cyan";
+                itemURLEl.style.opacity = "30%";
+                infoContainerEl.appendChild(itemURLEl);
+            }
+        }
+        
         if ("Deadline" in item) {
-            const itemDescEl = document.createElement("p");
-            itemDescEl.textContent = `Deadline: ${item.Deadline}`;
-            itemDescEl.style.color = "gray";
-            itemDescEl.style.fontWeight = "300";
-            infoContainerEl.appendChild(itemDescEl);
+            if (item.Deadline) {   
+                const itemDescEl = document.createElement("p");
+                itemDescEl.textContent = `Deadline: ${item.Deadline}`;
+                itemDescEl.style.color = "gray";
+                itemDescEl.style.fontWeight = "300";
+                infoContainerEl.appendChild(itemDescEl);
+            }
         }
 
         todoListEl.appendChild(itemContainer);
         itemContainer.appendChild(infoContainerEl);
     }
+}
+
+function autoRemoveTasks() {
+    const now = Date();
+    const today = new Date(now);
+    today.setHours(0,0,0,0);
+
+    let tasks = localStorage.getItem("todoList");
+    if (!tasks) {
+        localStorage.setItem("todoList","[]");
+        return;
+    }
+    tasks = JSON.parse(tasks);
+    const filtered = tasks.filter(item => {
+        if ("Deadline" in item && item.Deadline) {
+            const deadlineDate = new Date(item.Deadline);
+            return today < deadlineDate;
+        }
+        return true;
+    })
+    localStorage.setItem("todoList",JSON.stringify(filtered));
+    renderTasks();
 }
 
 function initApp() {
@@ -1121,9 +1313,11 @@ function initApp() {
         positionSettings();
         updateGreeting();
         renderTasks();
+        autoRemoveTasks();
         setInterval(() => {
             getLocation();
             updateGreeting();
+            autoRemoveTasks();
         }, 3600000);
     }
 }
