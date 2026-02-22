@@ -288,7 +288,7 @@
                     width: 30%;
                     height: 50%;
                     backdrop-filter: blur(3px);
-                    background-color: rgba(66, 66, 66, 0.037);
+                    background-color: rgba(66, 66, 66, 0.15);
                     transition: 
                         backdrop-filter 0.2s ease,
                         transform 0.2s ease,
@@ -422,6 +422,7 @@
                 #todoList {
                     padding-left: 1em;
                     padding-right:  1em;
+                    margin-left: 0.35em; font-weight: 250;
                     display: flex;
                     flex-direction: column;
                     padding-top: 0.5em; 
@@ -459,6 +460,40 @@
                 .saveReminderDisabled {
                     cursor: not-allowed;
                     opacity: 20%;
+                }
+
+                .separator {
+                    height: 1px;
+                    width: 95%;
+                    border: none;
+                    margin: 0 auto;
+                    background-color: white;
+                }
+
+                .dataManagementStyle {
+                    border: 1px solid gray;
+                    border-radius: 10px;
+                    color: white;
+                    background-color: rgba(0,0,0,0.185);
+                    transition: opacity 0.2s ease-in-out;
+                    opacity: 100%;
+                }
+
+                .dataManagementStyleDanger {
+                    border: 1px solid gray;
+                    border-radius: 10px;
+                    color: red;
+                    background-color: rgba(0,0,0,0.185);
+                    transition: opacity 0.2s ease-in-out;
+                    opacity: 100%;
+                }
+
+                .dataManagementStyle:hover {
+                    opacity: 50%
+                }
+
+                .dataManagementStyleDanger:hover {
+                    opacity: 50%;
                 }
             </style>
         </head>
@@ -532,6 +567,16 @@
                 <h1 style="margin-left: 0.35em; font-weight: 250;">Themes</h1>
                 <div id="wallpapersContainer">
                 </div>  
+                <hr class="separator">
+                <h1 style="margin-left: 0.35em; font-weight: 250;">Data</h1>
+                <div id="dataManagementContainer">
+                    <button id="exportData" class="dataManagementStyle">Export data</button>
+                    <button id="importData" class="dataManagementContainer">Import data</button>
+                    <button id="deletData" class="dataManagementStyleDanger">Delete all data</button>
+                </div>
+            </div>
+            <div id="deleteAllDataPrompt">
+                
             </div>
             <div id="memoryAddNoti">
                 <h2 style="font-weight: 600; color: white;">Memory added</h2>

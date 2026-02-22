@@ -1312,7 +1312,7 @@ function initApp() {
         getQuoteOfTheday();
         positionSettings();
         updateGreeting();
-        renderTasks();
+        renderTasks(); 
         autoRemoveTasks();
         setInterval(() => {
             getLocation();
@@ -1365,6 +1365,9 @@ function setupDone() {
         positionTodoBox();
         return;
     }
+}
+
+function deleteAllData() {
 }
 
 function redirectToGitHub() {
