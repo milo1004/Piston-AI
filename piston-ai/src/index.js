@@ -50,7 +50,7 @@ export default {
       const { latitude, longitude } = request.cf;
       const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
       const data = await response.json();
-      return Response(
+      return new Response(
         JSON.stringify(data),
         {
           headers: {
@@ -59,8 +59,6 @@ export default {
           }
         }
       );
-    } else if (pathname === "/weather") {
-
     } else {
       if (request.method !== "POST") {
         return new Response("Method Not Allowed", { status: 405 });

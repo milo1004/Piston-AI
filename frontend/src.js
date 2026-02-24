@@ -873,9 +873,8 @@ function positionWeather() {
 async function getWeather() {
     const codes = { 0: "clear", 1: "mostly clear", 2: "partly cloudy", 3: "overcast", 45: "foggy", 48: "foggy", 51: "light drizzle", 61: "rain", 80: "rain showers", 95: "thunderstorm" };
     try {
-        const response = await fetch(`https://piston-ai.chanyanyan3205.workers.dev/weather`, {
-            method: "POST",
-            signal: AbortSignal.timeout(5000)
+        const response = await fetch("https://piston-ai.chanyanyan3205.workers.dev/weather", {
+            signal: AbortSignal(5000)
         });
         const data = await response.json();
         console.log(data);
@@ -1335,7 +1334,7 @@ function initApp() {
         renderTasks(); 
         autoRemoveTasks();
         setInterval(() => {
-            ;
+            getWeather();
             updateGreeting();
             autoRemoveTasks();
         }, 3600000);
@@ -1382,8 +1381,14 @@ function setupDone() {
         positionAIBox();
         getQuoteOfTheday();
         positionSettings();
-        positionTodoBox();
-        return;
+        updateGreeting();
+        renderTasks(); 
+        autoRemoveTasks();
+        setInterval(() => {
+            getWeather();
+            updateGreeting();
+            autoRemoveTasks();
+        }, 3600000);
     }
 }
 
