@@ -874,6 +874,7 @@ async function getWeather() {
     const codes = { 0: "clear", 1: "mostly clear", 2: "partly cloudy", 3: "overcast", 45: "foggy", 48: "foggy", 51: "light drizzle", 61: "rain", 80: "rain showers", 95: "thunderstorm" };
     try {
         const response = await fetch(`https://piston-ai.chanyanyan3205.workers.dev/weather`, {
+            method: "POST",
             signal: AbortSignal.timeout(5000)
         });
         const data = await response.json();
@@ -898,12 +899,18 @@ async function getWeather() {
         console.log("Fallback. Using cached data.");
 
         const data = JSON.parse(localStorage.getItem("weatherData"));
+        const temp = data.current_weather.temperature.toString();
+        const code = codes[data.current_weather.weathercode];
+        const tempUnit = data.current_weather_units.temperature;
 
-        if (!data) {
-            console.log("Fallback failed. No weather data cached.")
-        } else {
-            getWeather();
-        }
+        const tempEl = document.getElementById("temp");
+        const weatherText = document.getElementById("weatherText");
+        const weatherData = document.getElementById("weatherData");
+
+        tempEl.textContent = temp + tempUnit;
+        weatherText.textContent = code;
+        weatherData.src = `src/${code}.png`
+
     }
 }
 
@@ -1318,7 +1325,7 @@ function initApp() {
         alignClock();
         positionClock();
         positionWeather();
-        getLocation();
+        getWeather();
         positionManIn();
         positionAbort();
         positionAIBox();
@@ -1328,7 +1335,7 @@ function initApp() {
         renderTasks(); 
         autoRemoveTasks();
         setInterval(() => {
-            getLocation();
+            ;
             updateGreeting();
             autoRemoveTasks();
         }, 3600000);
@@ -1369,7 +1376,7 @@ function setupDone() {
         alignClock();
         positionClock();
         positionWeather();
-        getLocation();
+        getWeather();
         positionManIn();
         positionAbort();
         positionAIBox();
