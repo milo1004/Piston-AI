@@ -55,7 +55,7 @@
                 }
 
                 body.blur-active > *:not(#setUp-container, #deleteAllDataPrompt) {
-                    filter: blur(5px);
+                    filter: blur(10px);
                     pointer-events: none;
                 }
 
@@ -514,6 +514,10 @@
                     flex-direction: column;
                     padding: 10px 1em 10px 1em;
                     height: 7em;
+                    visibility: hidden;
+                    transition: opacity 0.2s ease;
+                    position: absolute;
+                    z-index: 1000;
                 }
                 
                 #cancelDelete {
@@ -623,15 +627,15 @@
                     <button id="exportData" class="dataManagementStyle" onclick="exportDataFunc()">Export data</button>
                     <input type="file" id="dataUpload" name="fileUpload" style="display: none" accept=".json">
                     <button id="importData" class="dataManagementStyle" onclick="document.getElementById('dataUpload').click()">Import data</button>
-                    <button id="deleteData" class="dataManagementStyleDanger">Delete all data</button>
+                    <button id="deleteData" class="dataManagementStyleDanger" onclick="deleteAllData()">Delete all data</button>
                 </div>
             </div>
             <div id="deleteAllDataPrompt">
                 <h2>Are you sure?</h2>
                 <p>Deleting all data CANNOT be undone!</p>
                 <div style="display: flex; flex-direction: row; width: 100%; gap: 1em; position: absolute; bottom: 0; padding-bottom: 1em;">
-                    <button id="cancelDelete">Cancel</button>
-                    <button id="confirmDelete" onclick="localStorage.clear()">Confirm</button>
+                    <button id="cancelDelete" onclick="hideDeleteAllData()">Cancel</button>
+                    <button id="confirmDelete" onclick="localStorage.clear(); window.location.reload();">Confirm</button>
                 </div>
             </div>
             <div id="memoryAddNoti">

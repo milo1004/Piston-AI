@@ -118,7 +118,28 @@ async function positionSettings() {
 
     document.body.style.backgroundImage = `url('./src/wallpapers/${currentWallpaper}')`;
 
-    configPistonSettings();
+  configPistonSettings();
+  
+  document.getElementById("dataUpload").addEventListener("change", (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const fileReader = new FileReader();
+      fileReader.onload = (e) => {
+        try {
+            const fileData = JSON.parse(e.target.result);
+            for (const key in fileData) {
+                localStorage.setItem(key, fileData[key]);
+            }
+            hidePistonSettings();
+            alert("Data successfully imported!");
+            window.location.reload();
+        } catch (error) {
+            alert(`Invalid JSON file: ${error}`);
+        }
+      }
+      fileReader.readAsText(file);
+    }
+  });
 }
 
 function exportDataFunc() {
@@ -135,7 +156,29 @@ function exportDataFunc() {
     URL.revokeObjectURL(url);
 }
 
-function importDataFunc() {
+function deleteAllData() {
+    const deleteAllDataPromptEl = document.getElementById("deleteAllDataPrompt");
+    const rectWidth = deleteAllDataPromptEl.getBoundingClientRect().width;
+    const rectHeight = deleteAllDataPromptEl.getBoundingClientRect().height;
+    deleteAllDataPromptEl.style.left = (window.innerWidth - rectWidth) / 2 + 'px';
+    deleteAllDataPromptEl.style.top = (window.innerHeight - rectHeight) / 2 + 'px';
+    deleteAllDataPromptEl.style.visibility = "visible";
+    deleteAllDataPromptEl.style.opacity = "0";
+    deleteAllDataPromptEl.addEventListener("transitionend", () => {
+        deleteAllDataPromptEl.style.opacity = "1";
+        document.body.classList.add("blur-active");
+    })
+
+}
+
+function hideDeleteAllData() {
+    const deleteAllDataPromptEl = document.getElementById("deleteAllDataPrompt");
+    deleteAllDataPromptEl.style.opacity = "1";
+    deleteAllDataPromptEl.style.opacity = "0";
+    deleteAllDataPromptEl.addEventListener("transitionend", () => {
+        deleteAllDataPromptEl.style.visibility = "hidden";
+        document.body.classList.remove("blur-active");
+    })
 }
 
 function setCurrentWallpaper(wallpaper) {
@@ -216,19 +259,14 @@ function positionManIn() {
 function modAIBox() {
     const tcEl = document.getElementById("tc");
     const AIboxEl = document.getElementById("AIbox");
-
     if (AIboxout === true) {
         const target_y = window.innerHeight - AIboxEl.offsetHeight * 0.16;
         const rel_y = target_y - AIboxEl.offsetTop;
-        AIboxEl.style.transform = `translate(0, -100px)`;
-        setTimeout(() => {}, 200);
         AIboxEl.style.transform = `translate(0, ${rel_y}px)`;
         AIboxout = false;
     } else if (AIboxout === false) {
         const target_y = tcEl.offsetTop + tcEl.offsetHeight + 10;
         const rel_y = target_y - AIboxEl.offsetTop;
-        AIboxEl.style.transform = `translate(0, 100px)`;
-        setTimeout(() => {}, 200);
         AIboxEl.style.transform = `translate(0, ${rel_y}px)`;
         AIboxout = true;
     }
@@ -372,6 +410,7 @@ function positionAIBox() {
     const AIboxEl = document.getElementById("AIbox");
     const tcEl = document.getElementById("tc");
 
+    AIboxEl.style.top = tcEl.offsetTop + tcEl.offsetHeight + 10 + 'px';
     const historyMsg = JSON.parse(localStorage.getItem("history"));
 
     if (historyMsg === null) return;
@@ -831,50 +870,10 @@ function positionWeather() {
     weatherEl.style.right = "10%";
 }
 
-async function getLocation() {
-    try {
-
-        const response = await fetch(`https://ipapi.co/json`, {
-            signal: AbortSignal.timeout(5000)
-        });
-        const data = await response.json();
-
-        console.log(`Lat: ${data.latitude} Lon: ${data.longitude}`);
-        getWeather(data.latitude, data.longitude);
-    } catch (error) {
-        console.error("Failed to obtain ip or lat and lon: ", error);
-        getWeather();
-    }
-
-
-}
-
-async function getWeather(lat, lon) {
+async function getWeather() {
     const codes = { 0: "clear", 1: "mostly clear", 2: "partly cloudy", 3: "overcast", 45: "foggy", 48: "foggy", 51: "light drizzle", 61: "rain", 80: "rain showers", 95: "thunderstorm" };
-    if (!lat && !lon) {
-        const data = JSON.parse(localStorage.getItem("weatherData"));
-        if (!data) {
-            console.log("Weather cache not found");
-            return 
-        };
-        const temp = data.current_weather.temperature.toString();
-        const code = codes[data.current_weather.weathercode];
-        const tempUnit = data.current_weather_units.temperature;
-        console.log(data)
-
-        const tempEl = document.getElementById("temp");
-        const weatherText = document.getElementById("weatherText");
-        const weatherData = document.getElementById("weatherData");
-
-        tempEl.textContent = temp + tempUnit;
-        weatherText.textContent = code;
-        weatherData.src = `src/${code}.png`
-
-        console.log(temp,tempUnit," ",code,);
-        return;
-    }
     try {
-        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`, {
+        const response = await fetch(`https://piston-ai.chanyanyan3205.workers.dev/weather`, {
             signal: AbortSignal.timeout(5000)
         });
         const data = await response.json();
@@ -1379,9 +1378,6 @@ function setupDone() {
         positionTodoBox();
         return;
     }
-}
-
-function deleteAllData() {
 }
 
 function redirectToGitHub() {

@@ -1,7 +1,8 @@
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
+const CORSHeaders = {
+  headers: {
+  "Content-Type": "application/json",
+  "Access-Control-Allow-Origin": "*"
+  }
 };
 
 export default {
@@ -19,32 +20,47 @@ export default {
     const pathname = url.pathname;
     
     if (pathname === "/quote") {
-		try {
-			const quoteRes = await fetch("https://zenquotes.io/api/random", {
-			headers: { "User-Agent": "cloudflare-worker" }
-			});
+      try {
+        const quoteRes = await fetch("https://zenquotes.io/api/random", {
+        headers: { "User-Agent": "cloudflare-worker" }
+        });
 
-			const data = await quoteRes.json();
-			const quote = data[0];
+        const data = await quoteRes.json();
+        const quote = data[0];
 
-			return new Response(
-			JSON.stringify({
-				text: quote.q,
-				author: quote.a
-			}),
-			{
-				headers: {
-				"Content-Type": "application/json",
-				"Access-Control-Allow-Origin": "*"
-				}
-			}
-			);
-		} catch (e) {
-			return new Response(
-			JSON.stringify({ error: "Quote service unavailable" }),
-			{ status: 502, headers: { "Access-Control-Allow-Origin": "*" } }
-			);
-		}
+        return new Response(
+        JSON.stringify({
+          text: quote.q,
+          author: quote.a
+        }),
+        {
+          headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*"
+          }
+        }
+        );
+      } catch (e) {
+        return new Response(
+        JSON.stringify({ error: "Quote service unavailable" }),
+        { status: 502, headers: { "Access-Control-Allow-Origin": "*" } }
+        );
+      }
+    } else if (pathname === "/weather") {
+      const { latitude, longitude } = request.cf;
+      const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
+      const data = await response.json();
+      return Response(
+        JSON.stringify(data),
+        {
+          headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*"
+          }
+        }
+      );
+    } else if (pathname === "/weather") {
+
     } else {
       if (request.method !== "POST") {
         return new Response("Method Not Allowed", { status: 405 });
