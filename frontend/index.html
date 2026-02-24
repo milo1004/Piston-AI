@@ -4,11 +4,12 @@
             <title>
                 Piston AI
             </title>
+            <meta charset="UTF-8">
             <link rel="icon" type="image/png" href="src/AI.png">
             <style>
                 @font-face {
-                    font-family: "MiSans";
-                    src: url("MiSansRegular.ttf") format("truetype");
+                    font-family: "JetbrainsMono";
+                    src: url("JetBrainsMono.ttf") format("truetype");
                 }
 
                 body, html {
@@ -18,7 +19,7 @@
 
                 * {
                     margin: 0;
-                    font-family: "MiSans", sans-serif;
+                    font-family: "JetbrainsMono", sans-serif;
                     color: white;
                     user-select: none;
                     -webkit-user-select: none;
@@ -53,7 +54,7 @@
                     box-shadow: 0 6px 20px rgba(0,0,0,0.8);
                 }
 
-                body.blur-active > *:not(#setUp-container) {
+                body.blur-active > *:not(#setUp-container, #deleteAllDataPrompt) {
                     filter: blur(5px);
                     pointer-events: none;
                 }
@@ -73,7 +74,6 @@
                     backdrop-filter: blur(3px);
                     z-index: 1000;
                     justify-content: center;
-                    align-items: center;
                     padding: 5%;
                     transition: opacity 0.2s ease;
                 }
@@ -489,11 +489,61 @@
                 }
 
                 .dataManagementStyle:hover {
-                    opacity: 50%
+                    opacity: 50%;
+                    cursor: pointer;
                 }
 
                 .dataManagementStyleDanger:hover {
                     opacity: 50%;
+                    cursor: pointer;
+                }
+
+                #dataManagementContainer {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.2em;
+                    padding: 0.1em 0.5em 0.1em 0.5em;
+                }
+
+                #deleteAllDataPrompt {
+                    border: 1px solid gray;
+                    border-radius: 10px;
+                    backdrop-filter: blur(3px);
+                    background-color: rgba(0,0,0,0.185);
+                    display: flex;
+                    flex-direction: column;
+                    padding: 10px 1em 10px 1em;
+                    height: 7em;
+                }
+                
+                #cancelDelete {
+                    border-radius: 5px;
+                    border: none;
+                    color: white;
+                    background-color: black;
+                    padding: 3px 0.5em 3px 0.5em;
+                    font-size: 1em;
+                    transition: opacity 0.2s ease-in-out;
+                }
+
+                #cancelDelete:hover {
+                    opacity: 0.6;
+                    cursor: pointer;
+                }
+
+                #confirmDelete {
+                    border-radius: 5px;
+                    border: none;
+                    color: white;
+                    background-color: rgba(220,0,0,100);
+                    padding: 3px 0.5em 3px 0.5em;
+                    font-size: 1em;
+                    transition: opacity 0.2s ease-in-out;
+                }
+
+                #confirmDelete:hover {
+                    opacity: 0.6;
+                    cursor: pointer;
                 }
             </style>
         </head>
@@ -526,7 +576,7 @@
                 </div>
             </div>
             <div id="weather" class="weather">
-                <h1 class="h1-time" id="temp">--°C</h1>
+                <h1 class="h1-time" id="temp">--&deg;C</h1>
                 <div style="display: flex; flex-direction: row;" id="weatherInfo">
                     <img src="src/noData.png" id="weatherData" draggable="false">
                     <h1>&nbsp</h1>
@@ -570,13 +620,19 @@
                 <hr class="separator">
                 <h1 style="margin-left: 0.35em; font-weight: 250;">Data</h1>
                 <div id="dataManagementContainer">
-                    <button id="exportData" class="dataManagementStyle">Export data</button>
-                    <button id="importData" class="dataManagementContainer">Import data</button>
-                    <button id="deletData" class="dataManagementStyleDanger">Delete all data</button>
+                    <button id="exportData" class="dataManagementStyle" onclick="exportDataFunc()">Export data</button>
+                    <input type="file" id="dataUpload" name="fileUpload" style="display: none" accept=".json">
+                    <button id="importData" class="dataManagementStyle" onclick="document.getElementById('dataUpload').click()">Import data</button>
+                    <button id="deleteData" class="dataManagementStyleDanger">Delete all data</button>
                 </div>
             </div>
             <div id="deleteAllDataPrompt">
-                
+                <h2>Are you sure?</h2>
+                <p>Deleting all data CANNOT be undone!</p>
+                <div style="display: flex; flex-direction: row; width: 100%; gap: 1em; position: absolute; bottom: 0; padding-bottom: 1em;">
+                    <button id="cancelDelete">Cancel</button>
+                    <button id="confirmDelete" onclick="localStorage.clear()">Confirm</button>
+                </div>
             </div>
             <div id="memoryAddNoti">
                 <h2 style="font-weight: 600; color: white;">Memory added</h2>

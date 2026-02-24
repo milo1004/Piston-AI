@@ -121,6 +121,23 @@ async function positionSettings() {
     configPistonSettings();
 }
 
+function exportDataFunc() {
+    const data = JSON.stringify(localStorage, null, 2);
+    const  blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "piston-ai-data.json";
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+function importDataFunc() {
+}
+
 function setCurrentWallpaper(wallpaper) {
     document.body.style.opacity = "0%";
     requestAnimationFrame(() => {
@@ -197,7 +214,7 @@ function positionManIn() {
 }
 
 function modAIBox() {
-    const weatherEl = document.getElementById("weather");
+    const tcEl = document.getElementById("tc");
     const AIboxEl = document.getElementById("AIbox");
 
     if (AIboxout === true) {
@@ -208,7 +225,7 @@ function modAIBox() {
         AIboxEl.style.transform = `translate(0, ${rel_y}px)`;
         AIboxout = false;
     } else if (AIboxout === false) {
-        const target_y = weatherEl.offsetTop + weatherEl.offsetHeight + 10;
+        const target_y = tcEl.offsetTop + tcEl.offsetHeight + 10;
         const rel_y = target_y - AIboxEl.offsetTop;
         AIboxEl.style.transform = `translate(0, 100px)`;
         setTimeout(() => {}, 200);
@@ -354,9 +371,6 @@ function modRecordBtn() {
 function positionAIBox() {
     const AIboxEl = document.getElementById("AIbox");
     const tcEl = document.getElementById("tc");
-
-    AIboxEl.style.top = (tcEl.offsetTop + tcEl.offsetHeight) + 10 + 'px';
-    AIboxEl.style.left = (window.innerWidth - AIboxEl.offsetLeft) / 2; 
 
     const historyMsg = JSON.parse(localStorage.getItem("history"));
 
