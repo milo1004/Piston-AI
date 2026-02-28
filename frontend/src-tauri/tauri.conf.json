@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "frontend",
+  "productName": "Piston AI",
   "version": "0.1.0",
   "identifier": "com.miloc.piston-ai",
   "build": {
@@ -10,7 +10,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "frontend",
+        "title": "Piston AI",
         "width": 800,
         "height": 600,
         "fullscreen": true,
@@ -26,6 +26,9 @@
     "targets": "all",
     "icon": [
       "icons/favicon.icns"
-    ]
+    ],
+      "macOS": {
+        "signingIdentity":  "-"
+    }
   }
 }

@@ -24,6 +24,34 @@ There are several folders in the source code. Each of them represents different 
 - The backend/ folder is used for the STT engine which processes the audio blob sent from the frontend
 - The piston-ai/ folder is used for both the AI model and for the frontend to fetch for daily quotes without being banned by the browser (CORS)
 
+# Frotnend Source code
+This is the source code of the frontend of Piston AI. 
+You might wonder WHY it's not in a website form, but it's a tauri app. Therefore, all the web source files are in the src/ folder
+
+# Building the app
+First, you must head to the directory `frontend`
+## Prerequisites
+Before building the app, you will first need to install npm, nodeJS and cargo.
+
+How to install dependencies:
+```bash
+npm install
+```
+
+## Steps to building Piston AI
+1. Open terminal in this current directory and type in:
+```bash
+npm run tauri build
+```
+2. Extract the binary files from *src-tauri/target/release/bundle/*
+
+## Cleaning the directory
+Building Tauri can take up 1-4GB of storage. Therefore, this command helps you free them up:
+```bash
+cd src-tauri
+cargo run clean
+```
+
 # Credits
 - [JetBrains Mono](https://www.jetbrains.com/lp/mono/) font is used as the primary typeface. Licensed under the [SIL Open Font License 1.1](https://openfontlicense.org/).
 - [Unsplash](https://unsplash.com/) wallpapers are used. Credit these creators:

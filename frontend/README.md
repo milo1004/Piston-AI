@@ -1,7 +1,26 @@
-# Tauri + Vanilla
+# Source code
+This is the source code of the frontend of Piston AI. 
+You might wonder WHY it's not in a website form, but it's a tauri app. Therefore, all the web source files are in the src/ folder
 
-This template should help get you started developing with Tauri in vanilla HTML, CSS and Javascript.
+# Building the app
+## Prerequisites
+Before building the app, you will first need to install npm, nodeJS and cargo.
 
-## Recommended IDE Setup
+How to install dependencies:
+```bash
+npm install
+```
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+## Steps to building Piston AI
+1. Open terminal in this current directory and type in:
+```bash
+npm run tauri build
+```
+2. Extract the binary files from *src-tauri/target/release/bundle/*
+
+## Cleaning the directory
+Building Tauri can take up 1-4GB of storage. Therefore, this command helps you free them up:
+```bash
+cd src-tauri
+cargo run clean
+```
