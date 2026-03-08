@@ -43,6 +43,8 @@ function showPistonSettings() {
     requestAnimationFrame(() => {
         settingsContainerEl.style.opacity = "1";
     });
+    const deleteAllDataEl = document.getElementById("deleteData");
+    deleteAllDataEl.onclick = deleteAllData;
 }
 
 function hidePistonSettings() {
@@ -142,7 +144,7 @@ async function positionSettings() {
   });
 }
 
-function exportDataFunc() {
+export function exportDataFunc() {
     const data = JSON.stringify(localStorage, null, 2);
     const  blob = new Blob([data], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -168,7 +170,8 @@ function deleteAllData() {
         deleteAllDataPromptEl.style.opacity = "1";
         document.body.classList.add("blur-active");
     })
-
+    const cancelDeleteEl = document.getElementById("cancelDelete");
+    cancelDeleteEl.onclick = hideDeleteAllData;
 }
 
 function hideDeleteAllData() {
@@ -357,7 +360,7 @@ function hideAbort() {
     abortSTTEl.style.disabled = true;
 }
 
-async function startRecording() {
+export async function startRecording() {
     if (medRecorder?.state === "recording") {
         console.log("Already recording");
         recordState = true;
@@ -481,13 +484,13 @@ async function stopRecording() {
     SRBtnEl.addEventListener("mouseout", removeHint);
 }
 
-function saveHistory(roles, message) {
+function saveHistory(role, message) {
     let previousMessage = JSON.parse(localStorage.getItem("history"));
     if (!previousMessage) {
         previousMessage = [];
     }
     const payload = {
-        role: roles,
+        role,
         content: message
     }
     previousMessage.push(payload);
@@ -619,7 +622,7 @@ async function noVerboseAsk(uInput) {
             throw `POST https://chanyanyan3205.cloudflare.com/ ${result.statusText}`;
         }
         const response = await result.json();
-        saveHistory(roles="assistant", message=response.reply);
+        saveHistory("assistant", response.reply);
         const pisRes = document.createElement("p");
         pisRes.style.color = "#a6ff01";
         pisRes.style.userSelect = "text";
@@ -668,7 +671,7 @@ async function askPiston(uInput) {
         uInputEl.textContent = `You: ${uInput}`;
         AIboxEl.appendChild(uInputEl); 
         if (!AIboxout) { modAIBox(); };
-        saveHistory(roles="user", message=uInput);
+        saveHistory("user", uInput);
         let memory = `You have access to the memory below: \n The user's name is ${localStorage.getItem("username")}, ${JSON.stringify(localStorage.getItem("memory"))}`;
         const now = new Date(); 
         let AdditionalData = `Additional data: \nweather data:${localStorage.getItem("weatherData")}\ndate (DD/MM/YYYY): ${now.getDate().toString().padStart(2,"0")}/${now.getMonth().toString().padStart(2,"0")}/${now.getFullYear}\ntime (hour:minute): ${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}\nuser todo list:${localStorage.getItem("todoList")}`;
@@ -706,11 +709,11 @@ async function askPiston(uInput) {
             linebreak.style.lineHeight = 2.0;
             AIboxEl.appendChild(linebreak);
 
-            saveHistory(roles="assistant", message="Memory cleared!");
+            saveHistory("assistant", "Memory cleared!");
             return;
         }
 
-        saveHistory(roles="assistant", message=response.reply);
+        saveHistory("assistant", response.reply);
             
         if (response.reply.includes("chat.clear")) {
             localStorage.setItem("history", "[]");
@@ -1351,7 +1354,7 @@ function showSetup() {
     setupInputEl.focus();
 }
 
-function setupDone() {
+export function setupDone() {
     const inputEl = document.getElementById("setup-input");
     const warningTxt = document.getElementById("setup-warning");
     const username = inputEl.value.trim();
@@ -1394,7 +1397,7 @@ function setupDone() {
     }
 }
 
-function redirectToGitHub() {
+export function redirectToGitHub() {
     window.open("https://github.com/milo1004","_blank");
 }
 

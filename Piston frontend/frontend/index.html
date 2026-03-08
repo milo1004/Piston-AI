@@ -601,7 +601,7 @@
                 <div id="SRHint">
                     <p id="SRHintTxt" style="color: black">Press to start speech recognition</p>
                 </div>
-                <button class="startSTT" id="startSTT" onclick="">
+                <button class="startSTT" id="startSTT" onclick="startRecording()">
                     <img id="startSTTImg" src="src/src/STT.png" style="height: 80%;" draggable="false">
                 </button>
                 <input id="manIn" placeholder="Ask Piston AI">
@@ -626,14 +626,14 @@
                     <button id="exportData" class="dataManagementStyle" onclick="exportDataFunc()">Export data</button>
                     <input type="file" id="dataUpload" name="fileUpload" style="display: none" accept=".json">
                     <button id="importData" class="dataManagementStyle" onclick="document.getElementById('dataUpload').click()">Import data</button>
-                    <button id="deleteData" class="dataManagementStyleDanger" onclick="deleteAllData()">Delete all data</button>
+                    <button id="deleteData" class="dataManagementStyleDanger">Delete all data</button>
                 </div>
             </div>
             <div id="deleteAllDataPrompt">
                 <h2>Are you sure?</h2>
                 <p>Deleting all data CANNOT be undone!</p>
                 <div style="display: flex; flex-direction: row; width: 100%; gap: 1em; position: absolute; bottom: 0; padding-bottom: 1em;">
-                    <button id="cancelDelete" onclick="hideDeleteAllData()">Cancel</button>
+                    <button id="cancelDelete">Cancel</button>
                     <button id="confirmDelete" onclick="localStorage.clear(); window.location.reload();">Confirm</button>
                 </div>
             </div>
