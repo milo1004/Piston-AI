@@ -5,11 +5,11 @@
                 Piston AI
             </title>
             <meta charset="UTF-8">
-            <link rel="icon" type="image/png" href="src/AI.png">
+            <link rel="icon" type="image/png" href="src/src/favicon.png">
             <style>
                 @font-face {
                     font-family: "JetbrainsMono";
-                    src: url("JetBrainsMono.ttf") format("truetype");
+                    src: url("src/JetBrainsMono.ttf") format("truetype");
                 }
 
                 body, html {
@@ -30,7 +30,7 @@
                 body {
                     display: flex;
                     visibility: hidden;
-                    background-image: url("src/wallpapers/gradient-1.jpg");
+                    background-image: url("src/src/wallpapers/gradient-1.jpg");
                     margin: 3%;
                     justify-content: center;
                     overflow: hidden;
@@ -301,7 +301,6 @@
                 #AIbox:hover {
                     cursor: pointer;
                     backdrop-filter: blur(5px);
-                    background-color: rgba(0,0,0,0.3);
                 }
 
                 #manIn {
@@ -560,7 +559,7 @@
                 <p><br>What should we call you?</p>
                 <input type="text" id="setup-input" value="" placeholder="Your name here">
                 <br>
-                <button id="setup-done-btn" onclick="setupDone()"><p>Done :&#41</p></button>
+                <button id="setup-done-btn" onclick="setupDone()"><p>Done :&#41;</p></button>
                 <p id="setup-warning" style="color: red; font-size: x-small; margin-top: 0.5em; visibility: hidden; z-index: 1001;"></p>
             </div>
             <div id="tc" class="tc">
@@ -571,7 +570,7 @@
                 </div>
                 <div id="dc" style="display: flex; flex-direction: row; ">
                     <h1 id="weekday" style="color: #a6ff01">--</h1>
-                    <div>&nbsp&nbsp</div>
+                    <div>&nbsp;&nbsp;</div>
                     <h1 id="date">--</h1>
                 </div>
                 <div id="qotd">
@@ -582,8 +581,8 @@
             <div id="weather" class="weather">
                 <h1 class="h1-time" id="temp">--&deg;C</h1>
                 <div style="display: flex; flex-direction: row;" id="weatherInfo">
-                    <img src="src/noData.png" id="weatherData" draggable="false">
-                    <h1>&nbsp</h1>
+                    <img src="src/src/noData.png" id="weatherData" draggable="false">
+                    <h1>&nbsp;</h1>
                     <h1 id="weatherText" style="font-weight: 600">No data</h1>
                 </div>
             </div>
@@ -591,7 +590,7 @@
                 <div style="width: 100%; display: flex; flex-direction: row; align-items: center; padding-bottom: 3px;">
                     <h1 style="font-weight: 300;">To-Do</h1>
                     <button id="createReminder">
-                        <img src="src/add.png" id="createReminderImg" style="height: 25px; width: 25px; rotate: 0deg; transition: rotate 0.2s ease-in-out">
+                        <img src="src/src/add.png" id="createReminderImg" style="height: 25px; width: 25px; rotate: 0deg; transition: rotate 0.2s ease-in-out">
                     </button>
                 </div>
                 <hr style="background-color: gray;">
@@ -602,20 +601,20 @@
                 <div id="SRHint">
                     <p id="SRHintTxt" style="color: black">Press to start speech recognition</p>
                 </div>
-                <button class="startSTT" id="startSTT" onclick="">
-                    <img id="startSTTImg" src="src/STT.png" style="height: 80%;" draggable="false">
+                <button class="startSTT" id="startSTT" onclick="startRecording()">
+                    <img id="startSTTImg" src="src/src/STT.png" style="height: 80%;" draggable="false">
                 </button>
                 <input id="manIn" placeholder="Ask Piston AI">
                 <button class="startSTT" id="sendBtn">
-                    <img id="sendBtnImg" src="src/send.png" style="height: 80%;" draggable="false">
+                    <img id="sendBtnImg" src="src/src/send.png" style="height: 80%;" draggable="false">
                 </button> 
                 <button id="abortSTT" class="abortSTT">
-                    <img src="src/abort.png" draggable="false" style="height: 80%">
+                    <img src="src/src/abort.png" draggable="false" style="height: 80%">
                 </button>
             </div>
             <div id="AIbox"></div>
             <button id="pistonSettings" class="pistonSettings">
-                <img src="src/settings.png" style="width: 2em; height: 2em">
+                <img src="src/src/settings.png" style="width: 2em; height: 2em">
             </button>
             <div id="settingsContainer">
                 <h1 style="margin-left: 0.35em; font-weight: 250;">Themes</h1>
@@ -627,14 +626,14 @@
                     <button id="exportData" class="dataManagementStyle" onclick="exportDataFunc()">Export data</button>
                     <input type="file" id="dataUpload" name="fileUpload" style="display: none" accept=".json">
                     <button id="importData" class="dataManagementStyle" onclick="document.getElementById('dataUpload').click()">Import data</button>
-                    <button id="deleteData" class="dataManagementStyleDanger" onclick="deleteAllData()">Delete all data</button>
+                    <button id="deleteData" class="dataManagementStyleDanger">Delete all data</button>
                 </div>
             </div>
             <div id="deleteAllDataPrompt">
                 <h2>Are you sure?</h2>
                 <p>Deleting all data CANNOT be undone!</p>
                 <div style="display: flex; flex-direction: row; width: 100%; gap: 1em; position: absolute; bottom: 0; padding-bottom: 1em;">
-                    <button id="cancelDelete" onclick="hideDeleteAllData()">Cancel</button>
+                    <button id="cancelDelete">Cancel</button>
                     <button id="confirmDelete" onclick="localStorage.clear(); window.location.reload();">Confirm</button>
                 </div>
             </div>
@@ -643,6 +642,6 @@
                 <p id="memorydescription"></p>
             </div>
             <p class="credit" onclick="redirectToGitHub()">Brought to you by Milo Chan</p>
-            <script src="src.js"></script>
+            <script src="./src/src.js" type="module"></script>
         </body>
     </html>

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "Piston",
+  "outputfilename": "Piston AI",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "Milo Chan",
+    "email": "82019161+milo1004@users.noreply.github.com"
+  },
+  "iconName": "frontend/src/src/favicon"
+}
