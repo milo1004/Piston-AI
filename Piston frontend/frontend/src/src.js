@@ -1316,6 +1316,31 @@ function autoRemoveTasks() {
     renderTasks();
 }
 
+async function sendNoti(body) {
+    if (!localStorage.getItem("noti") || localStorage.getItem("noti") === "false") { 
+        if (!("Notification") in window) {
+            console.log("This browser does not support notifications");
+            return;
+        }
+        const permission = await Notification.requestPermission();
+        if (permission === "granted") {
+            console.log("Notification permissions granted!");
+        } else {
+            console.log("Notification permissions denied.");
+            return
+        }
+        localStorage.setItem("noti","true");
+    }
+    if (body) {
+        const payload = {
+            icon: "src/src/favicon.png",
+            body
+        }
+    } else { return };
+
+    const notification = new Notification("Piston AI", payload);
+}
+
 function initApp() {
     let userName = localStorage.getItem("username");
     requestMic();
@@ -1354,7 +1379,8 @@ function showSetup() {
     setupInputEl.focus();
 }
 
-export function setupDone() {
+export function setupDone() {    
+    sendNoti("Piston AI initialized!");
     const inputEl = document.getElementById("setup-input");
     const warningTxt = document.getElementById("setup-warning");
     const username = inputEl.value.trim();

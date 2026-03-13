@@ -20,36 +20,46 @@ Since Piston AI is web-based, it is super easy to setup. Just head to [https://p
 
 # About the source code
 There are several folders in the source code. Each of them represents different interfaces. 
-- The frontend/ folder is used for the website you can visit in [https://pistonai.pages.dev](https://pistonai.pages.dev)
+- The Piston frontend/ folder is used for the website you can visit in [https://pistonai.pages.dev](https://pistonai.pages.dev)
+- The Piston intro/ folder is the frontend of the introduction to Piston AI
 - The backend/ folder is used for the STT engine which processes the audio blob sent from the frontend
 - The piston-ai/ folder is used for both the AI model and for the frontend to fetch for daily quotes without being banned by the browser (CORS)
 
 # Frotnend Source code
 This is the source code of the frontend of Piston AI. 
-You might wonder WHY it's not in a website form, but it's a tauri app. Therefore, all the web source files are in the src/ folder
+You might wonder WHY it's not in a website form, but it's a Wail app. Therefore, all the web source files are in the src/ folder
 
 # Building the app
-First, you must head to the directory `frontend`
+First, you must head to the directory `Piston frontend`
 ## Prerequisites
-Before building the app, you will first need to install npm, nodeJS and cargo.
+Before building the app, you will first need to install npm and Go.
 
 How to install dependencies:
 ```bash
 npm install
+    Windows & Linux:
+    go install github.com/wailsapp/wails/v2/cmd/wails@latest
+
+    macOS:
+    xcode-select install
+    go install github.com/wailsapp/wails/v2/cmd/wails@latest
 ```
 
 ## Steps to building Piston AI
 1. Open terminal in this current directory and type in:
-```bash
-npm run tauri build
-```
-2. Extract the binary files from *src-tauri/target/release/bundle/*
+    ```bash
+    wails build
+    ```
+    or
+    
+    ```bash
+    ~/go/bin/wails build
+2. Extract the binary files from *build/bin/*
 
 ## Cleaning the directory
-Building Tauri can take up 1-4GB of storage. Therefore, this command helps you free them up:
+Building Wails can take up 512MB-4GB of storage. Therefore, this command helps you free them up:
 ```bash
-cd src-tauri
-cargo run clean
+rm -rf build/
 ```
 
 # Credits
