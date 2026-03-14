@@ -8,7 +8,7 @@ const AIboxElTemp = document.getElementById("AIbox");
 AIboxElTemp.onclick = modAIBox;
 let pistonSettingsState = false;
 
-function configPistonSettings(  ) {
+function configPistonSettings() {
     const bg = window.getComputedStyle(document.body).backgroundImage.slice(4, -1).replace(/["']/g, "");
 
     const pistonSettingsEl = document.getElementById("pistonSettings");
@@ -857,24 +857,22 @@ function positionClock() {
     clockEl.style.width = (hourEl.offsetWidth + minuteEl.offsetWidth + colonEl.offsetWidth + parseInt(window.getComputedStyle(clockEl).getPropertyValue("padding-left"))) + 15 + 'px';
 
     const rect = greeting.getBoundingClientRect();
-    clockEl.style.top = rect.bottom + (10 / window.innerHeight) + 'px';
+    clockEl.style.top = greeting.offsetTop + greeting.offsetHeight + 32 + 'px';
     clockEl.style.right = rect.left - 3 + 'px';
 }
 
 function positionWeather() {
     const greeting = document.getElementById("greeting");
     const weatherEl = document.getElementById("weather");
-    const weatherInfoEl = document.getElementById("weatherInfo");
-    const timeContainerEl = document.getElementById("tc");
+    const tcEl = document.getElementById("tc");
 
-    const rect = greeting.getBoundingClientRect();
-    weatherEl.style.top = rect.bottom + (10 / window.innerHeight) + 'px';
+    weatherEl.style.top = tcEl.offsetTop + 'px';
 
     weatherEl.style.right = "10%";
 }
 
 async function getWeather() {
-    const codes = { 0: "clear", 1: "mostly clear", 2: "partly cloudy", 3: "overcast", 45: "foggy", 48: "foggy", 51: "light drizzle", 61: "rain", 80: "rain showers", 95: "thunderstorm" };
+    const codes = { 0: "clear", 1: "mostly clear", 2: "partly cloudy", 3: "overcast", 45: "foggy", 48: "foggy", 51: "light drizzle", 61: "rain", 80: "rain showers", 95: "thunderstorm"};
     try {
         const response = await fetch("https://piston-ai.chanyanyan3205.workers.dev/weather", {
             signal: AbortSignal.timeout(5000)
