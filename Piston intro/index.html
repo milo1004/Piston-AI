@@ -14,7 +14,6 @@
             }
 
             body, html {
-                overflow: hidden;
                 height: 100%;                
             }
 
@@ -23,12 +22,11 @@
                 background-image: url("assets/gradient-1.jpg");
                 margin: 3%;
                 align-items: center;
-                overflow: hidden;
-                overscroll-behavior-y: none;
                 background-size: cover;
                 background-repeat: no-repeat;
                 background-position: center;
                 flex-direction: column;
+                overflow-y: auto;
             }
 
             .pistonBanner {
@@ -66,6 +64,35 @@
                 background-color: rgba(0,0,0,0.3);
                 cursor: pointer;
             }
+
+            .downloadsDiv {
+                backdrop-filter: blur(3px);
+                border: 1px solid gray;
+                border-radius: 5px;
+                margin-top: 5em;
+                padding: 16px 32px 16px 32px;
+                background-color: rgba(0,0,0,0.185);
+            }
+
+            .downloadsButton {
+                background-color: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(5px);
+                border-radius: 5px;
+                border: 2px solid gray;
+                transition: background-color 0.2s ease;
+                
+            }
+
+            .downloadsButton:hover {
+                background-color: lightgreen;
+                cursor: pointer;
+            }
+
+            .downloadArch {
+                display: flex;
+                flex-direction: row;
+                gap: 1em;
+            }
         </style>
         <title>Piston AI</title>
     </head>
@@ -81,7 +108,29 @@ Designed to sit fullscreen while you work, draw, or focus.</p>
             <button class="buttons" onclick="redirectToPage('https://flavortown.hackclub.com/projects/461')">
                 <img src="assets/flag-orpheus-top.svg" style="height: 2em;">View on FlavorTown Hack Club!
             </button>
-            <button class="buttons" onclick="redirectToPage('https://github.com/milo1004/Piston-AI/releases/tag/3.1')"><img src="assets/favicon.png" style="height:1.5em; border-radius: 50%;">Download Piston AI!</button>
+        </div>
+
+        <div class="downloadsDiv">
+            <h1>Downloads</h1>
+            <h3>Windows</h1>
+            <div class="downloadArch">
+                <button class="downloadsButton" onclick="redirectToPage('https://github.com/milo1004/Piston-AI/releases/download/3.2/Piston_AI-windows-x86_64.exe')">
+                    Download for Windows x86_64
+                </button>
+                <button class="downloadsButton" onclick="redirectToPage('https://github.com/milo1004/Piston-AI/releases/download/3.2/Piston_AI-windows-arm64.exe')">
+                    Download for Windows ARM64
+                </button>
+            </div>
+            <h3>macOS</h3>
+            <div class="downloadArch">
+                <button class="downloadsButton" onclick="redirectToPage('https://github.com/milo1004/Piston-AI/releases/download/3.2/Piston_AI-macos-arm64.dmg')">
+                    Download for Apple Silicon Macs
+                </button>
+                <button class="downloadsButton" onclick="redirectToPage('https://github.com/milo1004/Piston-AI/releases/download/3.2/Piston_AI-macos-amd64.dmg')">
+                    Download for Intel Macs
+                </button>
+            </div>
+            <h5>Linux version of Piston AI will be released soon!</h5>
         </div>
         <script src="src.js"></script>
     </body>
