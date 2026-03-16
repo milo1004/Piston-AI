@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="icon" type="image/png" href="assets/favicon.png">
+        <style>
+            @font-face {
+                font-family: "JetbrainsMono";
+                src: url("assets/JetBrainsMono.ttf") format("truetype");
+            }
+
+            * {
+                font-family: "JetbrainsMono", sans-serif;
+            }
+
+            body, html {
+                height: 100%;                
+            }
+
+            body {
+                display: flex;
+                background-image: url("assets/gradient-1.jpg");
+                margin: 3%;
+                align-items: center;
+                background-size: cover;
+                background-repeat: no-repeat;
+                background-position: center;
+                flex-direction: column;
+                overflow-y: auto;
+            }
+
+            .pistonBanner {
+                background-color: rgba(255,255,255,0.3);
+                backdrop-filter: blur(3px);
+                scale: 0.7;
+                border: none;
+                border-radius: 2em;
+            }
+
+            .buttonsDiv {
+                border: none;
+                display: flex;
+                flex-direction: row;
+                gap: 1em;
+                height: 2em;
+                margin-top: 2em;
+            }
+
+            .buttons {
+                background-color: rgba(0,0,0,0.185);
+                backdrop-filter: blur(3px);
+                border-radius: 5px;
+                border: 1px solid gray;
+                align-items: center;
+                justify-content: center;
+                display: flex;
+                flex-direction: row;
+                gap: 0.5em;
+                transition: background-color 0.1s ease-in-out;
+                font-size: 1em;
+            }
+            
+            .buttons:hover {
+                background-color: rgba(0,0,0,0.3);
+                cursor: pointer;
+            }
+
+            .downloadsDiv {
+                backdrop-filter: blur(3px);
+                border: 1px solid gray;
+                border-radius: 5px;
+                margin-top: 5em;
+                padding: 16px 32px 16px 32px;
+                background-color: rgba(0,0,0,0.185);
+            }
+
+            .downloadsButton {
+                background-color: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(5px);
+                border-radius: 5px;
+                border: 2px solid gray;
+                transition: background-color 0.2s ease;
+                
+            }
+
+            .downloadsButton:hover {
+                background-color: lightgreen;
+                cursor: pointer;
+            }
+
+            .downloadArch {
+                display: flex;
+                flex-direction: row;
+                gap: 1em;
+            }
+        </style>
+        <title>Piston AI</title>
+    </head>
+    <body>
+        <img src="assets/AI.png" class="pistonBanner">
+        <p style="width: 50%; color: rgba(0,0,0,0.67); text-align: center;"><b>Piston AI</b> is a desktop dashboard and smart assistant that lives on your screen.<br><br>
+It shows real-time info like time and weather, and helps you stay organized with built-in AI and a to-do list.
+Designed to sit fullscreen while you work, draw, or focus.</p>
+        <div class="buttonsDiv" id="buttonsDiv">
+            <button class="buttons" onclick="redirectToPage('https://github.com/milo1004/Piston-AI')">
+                <img src="assets/GitHub.svg" style="height:2em">View Piston AI on GitHub!
+            </button>
+            <button class="buttons" onclick="redirectToPage('https://flavortown.hackclub.com/projects/461')">
+                <img src="assets/flag-orpheus-top.svg" style="height: 2em;">View on FlavorTown Hack Club!
+            </button>
+        </div>
+
+        <div class="downloadsDiv">
+            <h1>Downloads</h1>
+            <h3>Windows</h1>
+            <div class="downloadArch">
+                <button class="downloadsButton" onclick="redirectToPage('https://github.com/milo1004/Piston-AI/releases/download/3.3/Piston_AI-windows-x86_64.exe')">
+                    Download for Windows x86_64
+                </button>
+                <button class="downloadsButton" onclick="redirectToPage('https://github.com/milo1004/Piston-AI/releases/download/3.3/Piston_AI-windows-arm64.exe')">
+                    Download for Windows ARM64
+                </button>
+            </div>
+            <h3>macOS</h3>
+            <div class="downloadArch">
+                <button class="downloadsButton" onclick="redirectToPage('https://github.com/milo1004/Piston-AI/releases/download/3.3/Piston_AI-macos-arm64.dmg')">
+                    Download for Apple Silicon Macs
+                </button>
+                <button class="downloadsButton" onclick="redirectToPage('https://github.com/milo1004/Piston-AI/releases/download/3.3/Piston_AI-macos-amd64.dmg')">
+                    Download for Intel Macs
+                </button>
+            </div>
+                        <div class="downloadArch">
+                <button class="downloadsButton" onclick="redirectToPage('https://github.com/milo1004/Piston-AI/releases/download/3.3/Piston_AI-linux-amd64')">
+                    Download for AMD64 Linux
+                </button>
+            </div>
+        </div>
+        <script src="src.js"></script>
+    </body>
+</html>
