@@ -243,7 +243,7 @@ function positionManIn() {
     const rel_borders = (manInEl.offsetHeight - sendBtnEl.offsetHeight) / 2;
     sendBtnEl.style.top = manInEl.offsetTop + rel_borders + 'px';
     manInEl.style.paddingRight = 8 + sendBtnEl.offsetWidth + 5 + 'px';
-    manInEl.style.width = parseFloat(getComputedStyle(manInEl).fontSize) * 25 - parseFloat(manInEl.style.paddingRght) + 'px';
+    manInEl.style.width = parseFloat(getComputedStyle(manInEl).fontSize) * 25 - parseFloat(manInEl.style.paddingRight) + 'px';
     if (manInEl.value === "") {
         sendBtnEl.disabled = true;
         startSTTEl.disabled = false;
@@ -422,23 +422,26 @@ function positionAIBox() {
     AIboxEl.innerHTML = "";
     for (let i = 0; i < historyMsg.length; i++) {
         if (historyMsg[i].role == "user") {
-            const userIn = document.createElement("p");
-            userIn.style.color = "white";
-            userIn.style.userSelect = "text";
-            userIn.style.cursor = "text";
-            userIn.textContent = `You: ${historyMsg[i].content}`;
-            AIboxEl.appendChild(userIn);
+            const uInputBubble = document.createElement("div");
+            uInputBubble.style.padding = "5px 1em 5px 1em";
+            uInputBubble.style.border = "0";
+            uInputBubble.style.borderRadius = "10px 0 10px 10px";
+            uInputBubble.style.backgroundColor = "rgb(86, 147, 245)";
+            uInputBubble.style.opacity = "0.8";
+            uInputBubble.style.marginLeft = "auto";
+            uInputBubble.style.marginRight = "5%";
+            uInputBubble.style.width = "fit-content";
+            uInputBubble.style.maxWidth = "60%";
+            uInputBubble.style.marginBottom = "1em";
+            const uInputEl = document.createElement("p");
+            uInputEl.style.color = "white";
+            uInputEl.style.userSelect = "text";
+            uInputEl.style.cursor = "text";
+            uInputEl.textContent = `${historyMsg[i].content}`;
+            uInputBubble.appendChild(uInputEl);
+            AIboxEl.appendChild(uInputBubble); 
         } else if (historyMsg[i].role === "assistant") {
-            const pisRes = document.createElement("p");
-            pisRes.style.color = "#a6ff01";
-            pisRes.style.marginTop = "5px";
-            pisRes.style.userSelect = "text";
-            pisRes.style.cursor = "text";
-            pisRes.textContent = historyMsg[i].content;
-            AIboxEl.appendChild(pisRes);
-            const lineBreak = document.createElement("br");
-            lineBreak.style.lineHeight = 2.0;
-            AIboxEl.appendChild(lineBreak);
+            renderResponse(historyMsg[i].content);
         }
 
     }
@@ -644,6 +647,25 @@ async function noVerboseAsk(uInput) {
     }
 }
 
+function renderResponse(output) {
+    if (!output) return;
+    const AIboxEl = document.getElementById("AIbox");
+    const pisResBubble = document.createElement("div");
+    pisResBubble.style.backgroundColor = "#a6ff01";
+    pisResBubble.style.borderRadius = "0px 10px 10px 10px";
+    pisResBubble.style.padding = "5px 1em 5px 1em";
+    pisResBubble.style.marginRight = "auto";
+    pisResBubble.style.marginLeft = "5%";
+    pisResBubble.style.width = "fit-content"
+    pisResBubble.style.maxWidth = "60%";
+    pisResBubble.style.marginBottom = "1em";
+    const pisResEl = document.createElement("p");
+    pisResEl.textContent = output;
+    pisResEl.style.color = "gray";
+    pisResBubble.appendChild(pisResEl);
+    AIboxEl.appendChild(pisResBubble);
+}
+
 async function askPiston(uInput) {
     const AIboxEl = document.getElementById("AIbox");
     try {
@@ -664,12 +686,24 @@ async function askPiston(uInput) {
                 br.parentNode.removeChild(br);
             })
         }
+        const uInputBubble = document.createElement("div");
+        uInputBubble.style.padding = "5px 1em 5px 1em";
+        uInputBubble.style.border = "0";
+        uInputBubble.style.borderRadius = "10px 0 10px 10px";
+        uInputBubble.style.backgroundColor = "rgb(86, 147, 245)";
+        uInputBubble.style.opacity = "0.8";
+        uInputBubble.style.marginLeft = "auto";
+        uInputBubble.style.marginRight = "5%";
+        uInputBubble.style.width = "fit-content";
+        uInputBubble.style.maxWidth = "60%";
+        uInputBubble.style.marginBottom = "1em";
         const uInputEl = document.createElement("p");
         uInputEl.style.color = "white";
         uInputEl.style.userSelect = "text";
         uInputEl.style.cursor = "text";
-        uInputEl.textContent = `You: ${uInput}`;
-        AIboxEl.appendChild(uInputEl); 
+        uInputEl.textContent = `${uInput}`;
+        uInputBubble.appendChild(uInputEl);
+        AIboxEl.appendChild(uInputBubble); 
         if (!AIboxout) { modAIBox(); };
         saveHistory("user", uInput);
         let memory = `You have access to the memory below: \n The user's name is ${localStorage.getItem("username")}, ${JSON.stringify(localStorage.getItem("memory"))}`;
@@ -696,20 +730,8 @@ async function askPiston(uInput) {
             return;
         } 
         if (response.reply.slice(0,12).toLowerCase() === "memory.clear") {
-            const pisRes = document.createElement("p");
-            localStorage.setItem("memory","[]");
-            pisRes.style.color = "#a6ff01";
-            pisRes.style.userSelect = "text";
-            pisRes.style.cursor = "text";
-            pisRes.style.marginTop = "5px";
-            pisRes.textContent = "Memory cleared!";
-            AIboxEl.appendChild(pisRes);
-            
-            const linebreak = document.createElement("br");
-            linebreak.style.lineHeight = 2.0;
-            AIboxEl.appendChild(linebreak);
-
-            saveHistory("assistant", "Memory cleared!");
+            renderResponse("Memory cleared!")
+            saveHistory("assistant", "Memory cleared!")
             return;
         }
 
@@ -725,38 +747,13 @@ async function askPiston(uInput) {
         }
 
         if (response.reply === "Chat cleared! Let's start fresh") {
-            const pisRes = document.createElement("p");
-            pisRes.style.color = "#a6ff01";
-            pisRes.style.userSelect = "text";
-            pisRes.style.cursor = "text";
-            pisRes.style.marginTop = "5px";
-            pisRes.textContent = response.reply;
-            pisRes.setAttribute("id","clearPrompt");
-            AIboxEl.appendChild(pisRes);
-            const lineBreak = document.createElement("br");
-            lineBreak.style.lineHeight = 2.0;
-            AIboxEl.appendChild(lineBreak);
+            renderResponse("Chat cleared! Let's start fresh");
             return;
         } else {
-            const pisRes = document.createElement("p");
-            pisRes.style.color = "#a6ff01";
-            pisRes.style.userSelect = "text";
-            pisRes.style.cursor = "text";
-            pisRes.style.marginTop = "5px";
-            pisRes.textContent = response.reply;
-            AIboxEl.appendChild(pisRes);
-            const lineBreak = document.createElement("br");
-            lineBreak.style.lineHeight = 2.0;
-            AIboxEl.appendChild(lineBreak);
+            renderResponse(response.reply);
         }
     } catch (e) {
-        const pisRes = document.createElement("p");
-        pisRes.style.color = "#a6ff01";
-        pisRes.style.userSelect = "text";
-        pisRes.style.cursor = "text";
-        pisRes.style.marginTop = "5px";
-        pisRes.textContent = `Error: ${e.state}, ${e}`;
-        AIboxEl.appendChild(pisRes);
+        renderResponse(`Error: ${e.state}, ${e}`);
     }
 }
 
