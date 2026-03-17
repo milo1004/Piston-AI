@@ -184,8 +184,8 @@
                     border-radius: 10em;
                     position: absolute;
                     bottom: 10px;
-                    height: 45px;
-                    width: 45px;
+                    height: 40px;
+                    width: 40px;
                     background-size: cover;
                     background-color: black;
                     display: flex;
@@ -307,7 +307,7 @@
                     border-radius: 10em;
                     position: absolute;
                     bottom: 10px;
-                    width: 25em;
+                    width: 30em;
                     height: 50px;
                     padding-left: 10px;
                     color: black;
@@ -633,7 +633,7 @@
                 <p>Deleting all data CANNOT be undone!</p>
                 <div style="display: flex; flex-direction: row; width: 100%; gap: 1em; position: absolute; bottom: 0; padding-bottom: 1em;">
                     <button id="cancelDelete">Cancel</button>
-                    <button id="confirmDelete" onclick="localStorage.clear(); window.location.reload();">Confirm</button>
+                    <button id="confirmDelete" onclick="deleteAll()">Confirm</button>
                 </div>
             </div>
             <div id="memoryAddNoti">

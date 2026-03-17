@@ -8,6 +8,18 @@ const AIboxElTemp = document.getElementById("AIbox");
 AIboxElTemp.onclick = modAIBox;
 let pistonSettingsState = false;
 
+function setLocalItem(key, value) {
+    console.log("setLocalItem")
+    if (!key) {
+        return;
+    }
+    localStorage.setItem(key, value);
+    const data = JSON.stringify(localStorage, null, 2);
+    pywebview.api.applyJSON(data).then(response => {
+        console.log(response);
+    })
+}
+
 function configPistonSettings() {
     const bg = window.getComputedStyle(document.body).backgroundImage.slice(4, -1).replace(/["']/g, "");
 
@@ -31,6 +43,10 @@ function configPistonSettings() {
             hidePistonSettings();
         }
     })
+    const exportDataEl = document.getElementById("exportData");
+    exportDataEl.onclick = () => {
+        exportDataFunc();
+    }
 }
 
 function showPistonSettings() {
@@ -71,7 +87,7 @@ async function positionSettings() {
 
     let currentWallpaper = localStorage.getItem("currentBG");
     if (!currentWallpaper) {
-        localStorage.setItem("currentBG", "gradient-1.jpg");
+        setLocalItem("currentBG", "gradient-1.jpg");
         currentWallpaper = "gradient-1.jpg";
     }
 
@@ -130,7 +146,7 @@ async function positionSettings() {
         try {
             const fileData = JSON.parse(e.target.result);
             for (const key in fileData) {
-                localStorage.setItem(key, fileData[key]);
+                setLocalItem(key, fileData[key]);
             }
             hidePistonSettings();
             alert("Data successfully imported!");
@@ -144,7 +160,7 @@ async function positionSettings() {
   });
 }
 
-export function exportDataFunc() {
+function exportDataFunc() {
     const data = JSON.stringify(localStorage, null, 2);
     const  blob = new Blob([data], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -192,7 +208,7 @@ function setCurrentWallpaper(wallpaper) {
     requestAnimationFrame(() => {
         document.body.style.opacity = "100%";
     })   
-    localStorage.setItem("currentBG", wallpaper);
+    setLocalItem("currentBG", wallpaper);
 }
 
 function handleInput() {
@@ -285,7 +301,6 @@ async function requestMic() {
             alert("Warning: Microphone not found. Make sure a microphone has been connected properly.");
             var micNotFound = true;
         } else {
-            alert("getUserMedia failed: ",e.name,e.message);
             console.error(e);
         }
         const SRHintEl = document.getElementById("SRHint");
@@ -497,12 +512,12 @@ function saveHistory(role, message) {
         content: message
     }
     previousMessage.push(payload);
-    localStorage.setItem("history", JSON.stringify(previousMessage));
+    setLocalItem("history", JSON.stringify(previousMessage));
 
     if (previousMessage.length > 50 * 2) {
         previousMessage.shift();
         previousMessage.shift();
-        localStorage.setItem("history", JSON.stringify(previousMessage));
+        setLocalItem("history", JSON.stringify(previousMessage));
         return;
     }
 }
@@ -587,11 +602,11 @@ function addMemory(message) {
         const memoryAddNotiEl = document.getElementById("memoryAddNoti");
         const memorydescriptionEl = document.getElementById("memorydescription");
         if (!memory) {
-            localStorage.setItem("memory","[]");
+            setLocalItem("memory","[]");
             memory = [];
         }
         memory.push(message);
-        localStorage.setItem("memory",JSON.stringify(memory));
+        setLocalItem("memory",JSON.stringify(memory));
         noVerboseAsk(`Tell ${localStorage.getItem("username")} that you have remembered about "${message}".`);
         memoryAddNotiEl.style.transform = `translate(0, ${memoryAddNotiEl.offsetHeight + 5 + 'px'})`;
         memoryAddNotiEl.style.visibility = "visible";
@@ -738,7 +753,7 @@ async function askPiston(uInput) {
         saveHistory("assistant", response.reply);
             
         if (response.reply.includes("chat.clear")) {
-            localStorage.setItem("history", "[]");
+            setLocalItem("history", "[]");
             response.reply = "Chat cleared! Let's start fresh";
             document.getElementById("AIbox").innerHTML = "";
             const linebreak = document.createElement("br");
@@ -891,7 +906,7 @@ async function getWeather() {
         weatherData.src = `./src/src/${imageName}.png`
         
         console.log(temp,tempUnit," ",code,);
-        localStorage.setItem("weatherData",JSON.stringify(data));
+        setLocalItem("weatherData",JSON.stringify(data));
     } catch (e) {
         console.log(`Failed to get weather: ${e}`);
         console.log("Fallback. Using cached data.");
@@ -924,7 +939,7 @@ async function getQuoteOfTheday() {
             signal: AbortSignal.timeout(5000)
         });
         const data = await result.json();
-        localStorage.setItem("quote", JSON.stringify(data));
+        setLocalItem("quote", JSON.stringify(data));
 
         console.log(data);
 
@@ -1165,7 +1180,7 @@ function createReminder() {
 function appendReminder(title, description, url, deadline) {
     let reminders = localStorage.getItem("todoList");
     if (!reminders) {
-        localStorage.setItem("todoList", "[]");
+        setLocalItem("todoList", "[]");
         reminders = [];
     } else {
         reminders = JSON.parse(reminders);
@@ -1179,7 +1194,7 @@ function appendReminder(title, description, url, deadline) {
     }
 
     reminders.push(payload);
-    localStorage.setItem("todoList",JSON.stringify(reminders));
+    setLocalItem("todoList",JSON.stringify(reminders));
 
     removeReminder();
 }
@@ -1189,7 +1204,7 @@ function renderTasks() {
     const todoListEl = document.getElementById("todoList");
     let tasks = JSON.parse(localStorage.getItem("todoList"));
     if (!tasks || tasks.length === 0) {
-        localStorage.setItem("todoList", "[]");
+        setLocalItem("todoList", "[]");
         todoListEl.style.alignItems = "center";
         todoListEl.style.justifyItems = "center";
         todoListEl.textContent = "All tasks done! Yay!";
@@ -1226,7 +1241,7 @@ function renderTasks() {
             if (checkEl.checked) {
                 waitForConf = setTimeout(() => {
                     tasks.splice(idx,1);  
-                    localStorage.setItem("todoList", JSON.stringify(tasks));
+                    setLocalItem("todoList", JSON.stringify(tasks));
                     itemContainer.style.transition = "opacity 0.2s ease";
                     itemContainer.style.opacity = "0";
                     itemContainer.offsetHeight;
@@ -1296,7 +1311,7 @@ function autoRemoveTasks() {
 
     let tasks = localStorage.getItem("todoList");
     if (!tasks) {
-        localStorage.setItem("todoList","[]");
+        setLocalItem("todoList","[]");
         return;
     }
     tasks = JSON.parse(tasks);
@@ -1307,7 +1322,7 @@ function autoRemoveTasks() {
         }
         return true;
     })
-    localStorage.setItem("todoList",JSON.stringify(filtered));
+    setLocalItem("todoList",JSON.stringify(filtered));
     renderTasks();
 }
 
@@ -1324,7 +1339,7 @@ async function sendNoti(body) {
             console.log("Notification permissions denied.");
             return
         }
-        localStorage.setItem("noti","true");
+        setLocalItem("noti","true");
     }
     if (body) {
         const payload = {
@@ -1336,6 +1351,30 @@ async function sendNoti(body) {
     const notification = new Notification("Piston AI", payload);
 }
 
+function initStorage() {
+    if (window.pywebview && window.pywebview.api) {
+        pywebview.api.getJSON().then(returned => {
+            const response = returned;
+            localStorage.clear();
+            if (!response) { return; }
+            const data = JSON.parse(response);
+            for (const key in data) {
+                localStorage.setItem(key, data[key]);
+                console.log("Imported ${key} with value ${data[key]}");
+            }
+            initApp();
+        });
+    } else {
+        setTimeout(initApp, 100);
+    }
+}
+
+function deleteAll() {
+    localStorage.clear();
+    pywebview.api.deleteAllData().then(() => {
+        window.location.reload();
+    })
+}
 function initApp() {
     let userName = localStorage.getItem("username");
     requestMic();
@@ -1388,7 +1427,7 @@ export function setupDone() {
     } else {
         const setupEl = document.getElementById("setUp-container");
         const greetingEl = document.getElementById("greeting");
-        localStorage.setItem("username",username);
+        setLocalItem("username",username);
         greetingEl.textContent = `Welcome back, ${username}!`;
         setupEl.style.opacity = "0%";
         requestAnimationFrame(() => {
@@ -1450,7 +1489,7 @@ function updateGreeting() {
     }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("pywebviewready", () => {
     document.body.style.visibility = "visible";
-    initApp();
+    initStorage();
 })
