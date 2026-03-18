@@ -39,5 +39,5 @@ jobs:
         run: ls /home/runner/work/Piston-AI/Piston-AI
 
       - name: Compile with Nuitka
-        working-directory: '/home/runner/work/Piston-AI/Piston frotend'
+        working-directory: '/home/runner/work/Piston-AI/Piston-AI/Piston frotend'
         run: python -m nuitka --clang --lto=yes --include-data-dir=src/=src/ --include-data-files=index.html=index.html --include-data-files=main.py=main.py main.py
