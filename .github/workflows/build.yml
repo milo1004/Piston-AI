@@ -41,3 +41,9 @@ jobs:
       - name: Compile with Nuitka
         working-directory: 'Piston frontend'
         run: python -m nuitka --clang --lto=yes --include-data-dir=src/=src/ --include-data-files=index.html=index.html --include-data-files=main.py=main.py main.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Piston binaries
+          path: main.bin
