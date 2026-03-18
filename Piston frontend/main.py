@@ -1,6 +1,5 @@
 import webview
 import os
-import sys
 
 class API:
     def getJSON(self):
