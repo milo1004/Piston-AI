@@ -36,7 +36,7 @@ jobs:
           pip install nuitka pywebview
 
       - name: Find repo
-        run: find / -type d -name "Piston-AI" 2>/dev/null
+        run: ls /home/runner/work/Piston-AI
 
       - name: Compile with Nuitka
         working-directory: '/home/runner/work/Piston-AI/Piston frotend'
