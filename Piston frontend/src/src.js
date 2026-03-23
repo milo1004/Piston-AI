@@ -7,17 +7,48 @@ let AIboxout = true;
 const AIboxElTemp = document.getElementById("AIbox");
 AIboxElTemp.onclick = modAIBox;
 let pistonSettingsState = false;
+let micAvailable = true;
+
+function getPyApi() {
+    if (!window.pywebview || !window.pywebview.api) {
+        return null;
+    }
+    return window.pywebview.api;
+}
+
+function getApiMethod(api, ...names) {
+    if (!api) return null;
+    for (const name of names) {
+        if (typeof api[name] === "function") {
+            return api[name].bind(api);
+        }
+    }
+    return null;
+}
 
 function setLocalItem(key, value) {
-    console.log("setLocalItem")
-    if (!key) {
-        return;
+    try {
+        console.log("setLocalItem")
+        if (!key) {
+            return;
+        }
+        localStorage.setItem(key, value);
+        const data = JSON.stringify(localStorage, null, 2);
+        const api = getPyApi();
+        const applyJSON = getApiMethod(api, "applyJSON", "apply_json");
+        if (!applyJSON) {
+            return;
+        }
+        applyJSON(data)
+            .then(response => {
+                console.log(response);
+            })
+            .catch(error => {
+                console.error("Failed to sync localStorage to pywebview:", error);
+        });
+    } catch {
+        localStorage.setItem(key, value);
     }
-    localStorage.setItem(key, value);
-    const data = JSON.stringify(localStorage, null, 2);
-    pywebview.api.applyJSON(data).then(response => {
-        console.log(response);
-    })
 }
 
 function configPistonSettings() {
@@ -53,7 +84,9 @@ function showPistonSettings() {
     pistonSettingsState = true;
     const settingsContainerEl = document.getElementById("settingsContainer");
     const pistonSettingsEl = document.getElementById("pistonSettings");
-    pistonSettingsEl.style.rotate = "180deg";
+    const pistonSettingsIMGEl = document.getElementById("pistonSettingsIMG");
+    pistonSettingsIMGEl.src = "./src/src/add.png";
+    pistonSettingsEl.style.rotate = "135deg";
     settingsContainerEl.style.visibility = "visible";
     settingsContainerEl.style.opacity = "0%";
     requestAnimationFrame(() => {
@@ -67,6 +100,8 @@ function hidePistonSettings() {
     pistonSettingsState = false;
     const settingsContainerEl = document.getElementById("settingsContainer");
     const pistonSettingsEl = document.getElementById("pistonSettings");
+    const pistonSettingsIMGEl = document.getElementById("pistonSettingsIMG");
+    pistonSettingsIMGEl.src = "./src/src/settings.png"
     pistonSettingsEl.style.rotate = "0deg";
     settingsContainerEl.style.opacity ="100%";
     settingsContainerEl.style.opacity = "0%";
@@ -188,6 +223,10 @@ function deleteAllData() {
     })
     const cancelDeleteEl = document.getElementById("cancelDelete");
     cancelDeleteEl.onclick = hideDeleteAllData;
+    const confirmDeleteEl = document.getElementById("confirmDelete");
+    confirmDeleteEl.onclick = () => {
+        deleteAll()
+    };
 }
 
 function hideDeleteAllData() {
@@ -253,8 +292,8 @@ function positionManIn() {
     const sendBtnEl = document.getElementById("sendBtn");
     const startSTTEl = document.getElementById("startSTT");
 
-        manInEl.style.left = startSTTEl.offsetLeft - 5 - manInEl.offsetWidth + 'px';
-        manInEl.style.bottom = 10 + 'px';
+    manInEl.style.right = 10 + startSTTEl.offsetWidth + 7 + 'px';
+    manInEl.style.bottom = 10 + 'px';
     sendBtnEl.style.left = startSTTEl.offsetLeft - 5 - sendBtnEl.offsetWidth - 8 + 'px';
     const rel_borders = (manInEl.offsetHeight - sendBtnEl.offsetHeight) / 2;
     sendBtnEl.style.top = manInEl.offsetTop + rel_borders + 'px';
@@ -291,6 +330,13 @@ function modAIBox() {
     }
 }
 async function requestMic() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        micAvailable = false;
+        const SRHintEl = document.getElementById("SRHint");
+        SRHintEl.style.visibility = "hidden";
+        window.microphoneUnavailable = true;
+        return;
+    }
     try {
         stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         console.log("Microphone access granted!");
@@ -309,6 +355,12 @@ async function requestMic() {
 }
 
 async function checkMicPerm() {
+    if (!micAvailable || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        return 1;
+    }
+    if (!navigator.permissions || !navigator.permissions.query) {
+        return 2;
+    }
     const permissionStat = await navigator.permissions.query({ name: "microphone" });
     console.log(`Microphone permission state = ${permissionStat.state}`);
     if (permissionStat.state === "granted") {
@@ -375,7 +427,7 @@ function hideAbort() {
     abortSTTEl.style.disabled = true;
 }
 
-export async function startRecording() {
+async function startRecording() {
     if (medRecorder?.state === "recording") {
         console.log("Already recording");
         recordState = true;
@@ -448,6 +500,7 @@ function positionAIBox() {
             uInputBubble.style.width = "fit-content";
             uInputBubble.style.maxWidth = "60%";
             uInputBubble.style.marginBottom = "1em";
+            uInputBubble.style.userSelect = "text";
             const uInputEl = document.createElement("p");
             uInputEl.style.color = "white";
             uInputEl.style.userSelect = "text";
@@ -560,13 +613,17 @@ SRBtnEl.addEventListener("mouseout", removeHint);
 SRBtnEl.onclick = async () => {
     let micPerm;
     micPerm = await checkMicPerm();
+    if (!micAvailable) {
+        alert("Microphone is not supported in this WebView/browser.");
+        return;
+    }
     if (micPerm === 0) {
     } else if (micPerm === 1) {
         alert("Microphone access has been denied. Please grant it in browser setings or system settings.");
         return;
     } else if (micPerm === 2) {
-        requestMic();
-        micPerm = checkMicPerm();
+        await requestMic();
+        micPerm = await checkMicPerm();
         if (micPerm === 1) {
             alert("Warning: Microphon access has been denied. Grant it in browser to use Piston AI.");
         } else if (micPerm === 0) {
@@ -674,6 +731,7 @@ function renderResponse(output) {
     pisResBubble.style.width = "fit-content"
     pisResBubble.style.maxWidth = "60%";
     pisResBubble.style.marginBottom = "1em";
+    pisResBubble.style.userSelect = "text";
     const pisResEl = document.createElement("p");
     pisResEl.textContent = output;
     pisResEl.style.color = "gray";
@@ -723,7 +781,7 @@ async function askPiston(uInput) {
         saveHistory("user", uInput);
         let memory = `You have access to the memory below: \n The user's name is ${localStorage.getItem("username")}, ${JSON.stringify(localStorage.getItem("memory"))}`;
         const now = new Date(); 
-        let AdditionalData = `Additional data: \nweather data:${localStorage.getItem("weatherData")}\ndate (DD/MM/YYYY): ${now.getDate().toString().padStart(2,"0")}/${now.getMonth().toString().padStart(2,"0")}/${now.getFullYear}\ntime (hour:minute): ${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}\nuser todo list:${localStorage.getItem("todoList")}`;
+        let AdditionalData = `Additional data: \nweather data:${localStorage.getItem("weatherData")}\ndate (DD/MM/YYYY): ${now.getDate().toString().padStart(2,"0")}/${now.getMonth().toString().padStart(2,"0")}/${now.getFullYear}\ntime (hour:minute): ${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}\nuser todo list:${localStorage.getItem("todoList")}\ncurrent quote of the day: ${localStorage.getItem("quote")}`;
         const result = await fetch("https://piston-ai.chanyanyan3205.workers.dev", {
             method: "POST",
             headers: {
@@ -874,13 +932,42 @@ function positionClock() {
 }
 
 function positionWeather() {
-    const greeting = document.getElementById("greeting");
     const weatherEl = document.getElementById("weather");
     const tcEl = document.getElementById("tc");
 
     weatherEl.style.top = tcEl.offsetTop + 'px';
 
     weatherEl.style.right = "10%";
+}
+
+function positionTimerUtils() {
+    const timerUtilsEl = document.getElementById("timerUtils");
+    const weatherEl = document.getElementById("weather");
+    timerUtilsEl.style.top = `${weatherEl.offsetTop}px`;
+    timerUtilsEl.style.left = `${weatherEl.offsetLeft + weatherEl.offsetWidth + 10}px`;
+}
+
+timerPages = [
+    `
+    <div style="display: flex; flex-direction: row; padding-left: 1em;"><h3>Stopwatch</h3></div>
+    <div style="display: flex; flex-direction: column; justify-content: center; width: 100%">
+
+    </div>
+    `
+]
+
+function positionUtilsPopup() {
+    const weatherEl = document.getElementById("weather");
+    const utilPopUpEl = document.getElementById("utilPopUp");
+    const AIboxEl = document.getElementById("AIbox");
+
+    const rect = weatherEl.getBoundingClientRect();
+    
+    AIboxEl.style.visibility = "visible";
+    utilPopUpEl.style.left = AIboxEl.offsetLeft + AIboxEl.offsetWidth + 25 + 'px';
+    utilPopUpEl.style.top = rect.top + rect.height + 25 + 'px';
+    AIboxEl.style.visibility = "hidden";
+    utilPopUpEl.innerHTML = timerPages[0];
 }
 
 async function getWeather() {
@@ -938,7 +1025,7 @@ async function getQuoteOfTheday() {
         const result = await fetch("https://piston-ai.chanyanyan3205.workers.dev/quote", {
             signal: AbortSignal.timeout(5000)
         });
-        const data = await result.json();
+        const data = await result.json()
         setLocalItem("quote", JSON.stringify(data));
 
         console.log(data);
@@ -975,6 +1062,17 @@ function positionTodoBox(resize) {
     todoBoxEl.style.left = rect.left - ((todoBoxEl.getBoundingClientRect().width - rect.width) / 2) + 'px';
     if (todoBoxEl.getBoundingClientRect().left + todoBoxEl.getBoundingClientRect().width > document.getElementById("AIbox").getBoundingClientRect().left) {
         todoBoxEl.style.left = document.getElementById("AIbox").getBoundingClientRect().left - todoBoxEl.getBoundingClientRect().width - 15 + 'px';
+    }
+
+    const todoBoxRect = todoBoxEl.getBoundingClientRect();
+    const viewPortBottom = window.innerHeight;
+    const todoBoxBottom = todoBoxRect.top + todoBoxRect.height;
+    if (todoBoxBottom + 10 > viewPortBottom) {
+        console.log("debug")
+        const overflow = (todoBoxBottom + 10) - viewPortBottom;
+        todoBoxEl.style.height = todoBoxRect.height - overflow + 'px';
+    } else {
+        todoBoxEl.style.height = "45%";
     }
 
     todoBoxEl.style.visibility = "visible";
@@ -1235,6 +1333,7 @@ function renderTasks() {
         infoContainerEl.style.flexDirection = "column";
         infoContainerEl.style.overflowX = "auto";
         infoContainerEl.style.overflowY = "auto";
+        infoContainerEl.style.width = "90%";
         const checkEl = document.createElement("input");
         checkEl.type = "checkbox";
         checkEl.addEventListener("change", () => {
@@ -1326,34 +1425,11 @@ function autoRemoveTasks() {
     renderTasks();
 }
 
-async function sendNoti(body) {
-    if (!localStorage.getItem("noti") || localStorage.getItem("noti") === "false") { 
-        if (!("Notification") in window) {
-            console.log("This browser does not support notifications");
-            return;
-        }
-        const permission = await Notification.requestPermission();
-        if (permission === "granted") {
-            console.log("Notification permissions granted!");
-        } else {
-            console.log("Notification permissions denied.");
-            return
-        }
-        setLocalItem("noti","true");
-    }
-    if (body) {
-        const payload = {
-            icon: "src/src/favicon.png",
-            body
-        }
-    } else { return };
-
-    const notification = new Notification("Piston AI", payload);
-}
-
 function initStorage() {
-    if (window.pywebview && window.pywebview.api) {
-        pywebview.api.getJSON().then(returned => {
+    const api = getPyApi();
+    const getJSON = getApiMethod(api, "getJSON", "get_json");
+    if (getJSON) {
+        getJSON().then(returned => {
             const response = returned;
             localStorage.clear();
             if (!response) { return; }
@@ -1371,10 +1447,21 @@ function initStorage() {
 
 function deleteAll() {
     localStorage.clear();
-    pywebview.api.deleteAllData().then(() => {
+    const api = getPyApi();
+    const deleteAllData = getApiMethod(api, "deleteAllData", "delete_all_data");
+    if (!deleteAllData) {
         window.location.reload();
-    })
+        return;
+    }
+    deleteAllData()
+        .then(() => {
+            window.location.reload();
+        })
+        .catch(() => {
+            window.location.reload();
+        });
 }
+
 function initApp() {
     let userName = localStorage.getItem("username");
     requestMic();
@@ -1387,14 +1474,16 @@ function initApp() {
         positionHint();
         alignClock();
         positionClock();
+        updateGreeting();
         positionWeather();
+        positionTimerUtils();
+        positionUtilsPopup();
         getWeather();
         positionManIn();
         positionAbort();
         positionAIBox();
         getQuoteOfTheday();
         positionSettings();
-        updateGreeting();
         renderTasks(); 
         autoRemoveTasks();
         setInterval(() => {
@@ -1411,10 +1500,11 @@ function showSetup() {
     document.body.classList.add("blur-active");
     const setupInputEl = document.getElementById("setup-input");
     setupInputEl.focus();
+    const setupDoneBtnEl = document.getElementById("setup-done-btn");
+    setupDoneBtnEl.onclick = setupDone;
 }
 
-export function setupDone() {    
-    sendNoti("Piston AI initialized!");
+function setupDone() {    
     const inputEl = document.getElementById("setup-input");
     const warningTxt = document.getElementById("setup-warning");
     const username = inputEl.value.trim();
@@ -1457,10 +1547,6 @@ export function setupDone() {
     }
 }
 
-export function redirectToGitHub() {
-    window.open("https://github.com/milo1004","_blank");
-}
-
 function updateGreeting() {
     const now = new Date();
     const hour = now.getHours();
@@ -1489,7 +1575,7 @@ function updateGreeting() {
     }
 }
 
-window.addEventListener("pywebviewready", () => {
+document.fonts.ready.then(() => {
     document.body.style.visibility = "visible";
     initStorage();
 })

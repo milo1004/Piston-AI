@@ -108,13 +108,6 @@
                     transition: background-color 0.2s ease;
                 }
 
-                .credit:hover {
-                    padding: 0.25em 0.25em 0.25em 0.25em;
-                    cursor: pointer;
-                    backdrop-filter: blur(2px);
-                    background-color: rgba(0, 0, 0, 0.3);
-                }
-
                 .tc {
                     border-radius: 10px;
                     border: 2px solid gray;
@@ -172,7 +165,6 @@
                     background-size: cover;
                     background-color: rgba(0, 0, 0, 0.5);
                     display: flex;
-
                     transition: 
                         background-color 0.2s ease,
                         opacity 0.2s ease;
@@ -419,8 +411,6 @@
 
                 #todoList {
                     padding-left: 1em;
-                    padding-right:  1em;
-                    margin-left: 0.35em; font-weight: 250;
                     display: flex;
                     flex-direction: column;
                     padding-top: 0.5em; 
@@ -547,6 +537,71 @@
                     opacity: 0.6;
                     cursor: pointer;
                 }
+
+                #fullscreenFocusMode {
+                    border-radius: 5px;
+                    background-color: rgba(0,0,0,0.185);
+                    backdrop-filter: blur(5px);
+                    border: none;
+                    height: 30px;
+                    width: 30px;
+                    cursor: pointer;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    margin-top: 1em;
+                    margin-left: 0.5em;
+                    transition: background-color 0.2s ease;
+                }
+
+                #fullscreenFocusMode:hover {
+                    background-color: rgba(0,0,0,0.3);
+                }
+
+                #timerUtils {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 5px;
+                    background-color: rgba(0,0,0,0.185);
+                    backdrop-filter: blur(5px);
+                    border: 1px solid gray;
+                    position: absolute;
+                    justify-content: center;
+                    align-items: center;
+                    padding: 3px;
+                    border-radius: 5px;
+                }
+
+                .timerBtns {
+                    border-radius: 35px;
+                    border: none;
+                    background-color: rgba(0,0,0,0.185);
+                    width: 35px;
+                    height: 35px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    cursor: pointer;
+                    transition: background-color 0.2s ease;
+                }
+
+                .timerBtns:hover {
+                    background-color: rgba(0,0,0,0.3);
+                }
+
+                #utilPopUp {
+                    background-color: rgba(0,0,0,0.185);
+                    border-radius: 20px;
+                    border: 1px solid gray;
+                    backdrop-filter: blur(3px);
+                    visibility: hidden;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 5px;
+                    transition: all 0.2s ease;
+                    position: absolute;
+                    width: 20em;
+                }
             </style>
         </head>
         <body>
@@ -558,7 +613,7 @@
                 <p><br>What should we call you?</p>
                 <input type="text" id="setup-input" value="" placeholder="Your name here">
                 <br>
-                <button id="setup-done-btn" onclick="setupDone()"><p>Done :&#41;</p></button>
+                <button id="setup-done-btn"><p>Done :&#41;</p></button>
                 <p id="setup-warning" style="color: red; font-size: x-small; margin-top: 0.5em; visibility: hidden; z-index: 1001;"></p>
             </div>
             <div id="tc" class="tc">
@@ -566,6 +621,9 @@
                     <h1 id="hour" class="h1-time">--</h1>
                     <h1 class="h1-time" id="colon">:</h1>
                     <h1 id="minute" class="h1-time">--</h1>
+                    <button id="fullscreenFocusMode">
+                        <img width="25px" height"25px" src="src/src/fullscreenFocus.png">
+                    </button>
                 </div>
                 <div id="dc" style="display: flex; flex-direction: row; ">
                     <h1 id="weekday" style="color: #a6ff01">--</h1>
@@ -584,6 +642,17 @@
                     <h1>&nbsp;</h1>
                     <h1 id="weatherText" style="font-weight: 600">No data</h1>
                 </div>
+            </div>
+            <div id="timerUtils">
+                <p style="color:white; margin: 3px;">utils</p>
+                <button class="timerBtns" id="stopwatchBtn">
+                    <img style="height:25px; width: 25px;" src="src/src/stopwatch.png">
+                </button>
+                <button class="timerBtns" id="timerBtn">
+                    <img style="height:25px; width: 25px;" src="src/src/timer.png">
+                </button>
+            </div>
+            <div id="utilPopUp">
             </div>
             <div id="todoBox">
                 <div style="width: 100%; display: flex; flex-direction: row; align-items: center; padding-bottom: 3px;">
@@ -613,7 +682,7 @@
             </div>
             <div id="AIbox"></div>
             <button id="pistonSettings" class="pistonSettings">
-                <img src="src/src/settings.png" style="width: 2em; height: 2em">
+                <img id="pistonSettingsIMG" src="src/src/settings.png" style="width: 2em; height: 2em">
             </button>
             <div id="settingsContainer">
                 <h1 style="margin-left: 0.35em; font-weight: 250;">Themes</h1>
@@ -633,14 +702,14 @@
                 <p>Deleting all data CANNOT be undone!</p>
                 <div style="display: flex; flex-direction: row; width: 100%; gap: 1em; position: absolute; bottom: 0; padding-bottom: 1em;">
                     <button id="cancelDelete">Cancel</button>
-                    <button id="confirmDelete" onclick="deleteAll()">Confirm</button>
+                    <button id="confirmDelete">Confirm</button>
                 </div>
             </div>
             <div id="memoryAddNoti">
                 <h2 style="font-weight: 600; color: white;">Memory added</h2>
                 <p id="memorydescription"></p>
             </div>
-            <p class="credit" onclick="redirectToGitHub()">Brought to you by Milo Chan</p>
-            <script src="./src/src.js" type="module"></script>
+            <p class="credit">Brought to you by milo1004</p>
+            <script src="src/src.js"></script>
         </body>
     </html>

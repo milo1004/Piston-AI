@@ -1,0 +1,7 @@
+{
+  "quote": "{\"text\":\"Be royal in your own fashion: act like a king to be treated like one.\",\"author\":\"Robert Greene\"}",
+  "weatherData": "{\"latitude\":34.054245,\"longitude\":-118.26599,\"generationtime_ms\":0.08988380432128906,\"utc_offset_seconds\":0,\"timezone\":\"GMT\",\"timezone_abbreviation\":\"GMT\",\"elevation\":103,\"current_weather_units\":{\"time\":\"iso8601\",\"interval\":\"seconds\",\"temperature\":\"°C\",\"windspeed\":\"km/h\",\"winddirection\":\"°\",\"is_day\":\"\",\"weathercode\":\"wmo code\"},\"current_weather\":{\"time\":\"2026-03-21T13:30\",\"interval\":900,\"temperature\":14.5,\"windspeed\":5,\"winddirection\":120,\"is_day\":0,\"weathercode\":2}}",
+  "todoList": "[]",
+  "username": "Milo\\",
+  "currentBG": "gradient-1.jpg"
+}
