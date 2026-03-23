@@ -316,6 +316,7 @@ function positionManIn() {
 
 function modAIBox() {
     const tcEl = document.getElementById("tc");
+    const weatherEl = document.getElementById("weather");
     const AIboxEl = document.getElementById("AIbox");
     if (AIboxout === true) {
         const target_y = window.innerHeight - AIboxEl.offsetHeight * 0.16;
@@ -323,7 +324,14 @@ function modAIBox() {
         AIboxEl.style.transform = `translate(0, ${rel_y}px)`;
         AIboxout = false;
     } else if (AIboxout === false) {
-        const target_y = tcEl.offsetTop + tcEl.offsetHeight + 10;
+        let target_y;
+        if (AIboxSuitableEl === "tc") {
+            target_y = tcEl.offsetTop + tcEl.offsetHeight + 10;
+        } else if (AIboxSuitableEl === "weather") {
+            target_y = weatherEl.offsetTop + weatherEl.offsetHeight + 10;
+        } else {
+            target_y = tcEl.offsetTop + tcEl.offsetHeight + 10;
+        }
         const rel_y = target_y - AIboxEl.offsetTop;
         AIboxEl.style.transform = `translate(0, ${rel_y}px)`;
         AIboxout = true;
@@ -476,11 +484,32 @@ function modRecordBtn() {
     }
 }
 
+let AIboxSuitableEl = "";
 function positionAIBox() {
     const AIboxEl = document.getElementById("AIbox");
     const tcEl = document.getElementById("tc");
+    const weatherEl = document.getElementById("weather");
+    const AIboxRect = AIboxEl.getBoundingClientRect();
 
-    AIboxEl.style.top = tcEl.offsetTop + tcEl.offsetHeight + 10 + 'px';
+    const tcRect = tcEl.getBoundingClientRect();
+    const weatherRect = weatherEl.getBoundingClientRect();
+
+    AIbox.style.top = weatherRect.top + weatherRect.height + 10 + 'px';
+    AIboxSuitableEl = "weather";
+    requestAnimationFrame(() => {
+        const overlapsTC = 
+            AIboxRect.left < tcRect.right &&
+            AIboxRect.right > tcRect.left &&
+            AIboxRect.top < tcRect.bottom &&
+            AIboxRect.bottom > tcRect.top;
+
+        if (overlapsTC) {
+            AIboxEl.style.top = tcRect.top + tcRect.height + 10 + 'px';
+            AIboxSuitableEl = "tc";
+        }
+
+    })
+
     const historyMsg = JSON.parse(localStorage.getItem("history"));
 
     if (historyMsg === null) return;
@@ -584,12 +613,17 @@ window.addEventListener("resize", () => {
     positionHint();
     alignClock();
     positionClock();
+    updateGreeting();
     positionWeather();
+    positionTimerUtils();
+    positionUtilsPopup();
+    getWeather();
+    positionTodoBox();  
     positionManIn();
     positionAbort();
     positionAIBox();
     positionSettings();
-    positionTodoBox(true);
+    renderTasks(); 
     autoRemoveTasks();
 })
 
@@ -1051,7 +1085,7 @@ async function getQuoteOfTheday() {
     positionAIBox();
 }
 
-function positionTodoBox(resize) {
+function positionTodoBox() {
     const tcEl = document.getElementById("tc");
     const todoBoxEl = document.getElementById("todoBox");
 
@@ -1068,24 +1102,29 @@ function positionTodoBox(resize) {
     const viewPortBottom = window.innerHeight;
     const todoBoxBottom = todoBoxRect.top + todoBoxRect.height;
     if (todoBoxBottom + 10 > viewPortBottom) {
-        console.log("debug")
+        console.log("bottom debug")
         const overflow = (todoBoxBottom + 10) - viewPortBottom;
         todoBoxEl.style.height = todoBoxRect.height - overflow + 'px';
     } else {
         todoBoxEl.style.height = "45%";
     }
 
+    const todoBoxLeft = todoBoxRect.left;
+    if (todoBoxLeft < 0) {
+        console.log("left debug")
+        const overflow = -todoBoxLeft;
+        todoBoxEl.style.width = todoBoxRect.width - overflow + 'px';
+        todoBoxEl.style.left = todoBoxLeft + overflow + "px";
+    }
+
     todoBoxEl.style.visibility = "visible";
-    if (!resize) {
-        const createReminderEl = document.getElementById("createReminder");
-        createReminderEl.style.left = createReminderEl.offsetLeft - createReminderEl.offsetWidth - 16 + 'px';
-        window.createReminderState = false;
-        createReminderEl.onclick = () => {
-            if (!window.createReminderState) {
-                createReminder();
-            } else {
-                removeReminder();
-            }
+    const createReminderEl = document.getElementById("createReminder");
+    window.createReminderState = false;
+    createReminderEl.onclick = () => {
+        if (!window.createReminderState) {
+            createReminder();
+        } else {
+            removeReminder();
         }
     }
     renderTasks();
@@ -1484,6 +1523,7 @@ function initApp() {
         positionAIBox();
         getQuoteOfTheday();
         positionSettings();
+        positionTodoBox();
         renderTasks(); 
         autoRemoveTasks();
         setInterval(() => {
