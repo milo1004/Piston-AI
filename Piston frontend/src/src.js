@@ -215,12 +215,12 @@ function deleteAllData() {
     const rectHeight = deleteAllDataPromptEl.getBoundingClientRect().height;
     deleteAllDataPromptEl.style.left = (window.innerWidth - rectWidth) / 2 + 'px';
     deleteAllDataPromptEl.style.top = (window.innerHeight - rectHeight) / 2 + 'px';
-    deleteAllDataPromptEl.style.visibility = "visible";
     deleteAllDataPromptEl.style.opacity = "0";
     deleteAllDataPromptEl.addEventListener("transitionend", () => {
+        deleteAllDataPromptEl.style.visibility = "visible";
         deleteAllDataPromptEl.style.opacity = "1";
         document.body.classList.add("blur-active");
-    })
+    });
     const cancelDeleteEl = document.getElementById("cancelDelete");
     cancelDeleteEl.onclick = hideDeleteAllData;
     const confirmDeleteEl = document.getElementById("confirmDelete");
@@ -236,7 +236,7 @@ function hideDeleteAllData() {
     deleteAllDataPromptEl.addEventListener("transitionend", () => {
         deleteAllDataPromptEl.style.visibility = "hidden";
         document.body.classList.remove("blur-active");
-    })
+    });
 }
 
 function setCurrentWallpaper(wallpaper) {
@@ -613,12 +613,11 @@ window.addEventListener("resize", () => {
     positionHint();
     alignClock();
     positionClock();
-    updateGreeting();
     positionWeather();
     positionTimerUtils();
-    positionUtilsPopup();
-    getWeather();
-    positionTodoBox();  
+    positionTodoBox();
+    positionUtilBox();  
+    positionWeather();
     positionManIn();
     positionAbort();
     positionAIBox();
@@ -958,7 +957,7 @@ function positionClock() {
     const minuteEl = document.getElementById("minute");
     const colonEl = document.getElementById("colon"); 
 
-    clockEl.style.width = (hourEl.offsetWidth + minuteEl.offsetWidth + colonEl.offsetWidth + parseInt(window.getComputedStyle(clockEl).getPropertyValue("padding-left"))) + 15 + 'px';
+    clockEl.style.width = (hourEl.offsetWidth + minuteEl.offsetWidth + colonEl.offsetWidth + parseInt(window.getComputedStyle(clockEl).getPropertyValue("padding-left"))) + 5 + 'px';
 
     const rect = greeting.getBoundingClientRect();
     clockEl.style.top = greeting.offsetTop + greeting.offsetHeight + 32 + 'px';
@@ -979,29 +978,256 @@ function positionTimerUtils() {
     const weatherEl = document.getElementById("weather");
     timerUtilsEl.style.top = `${weatherEl.offsetTop}px`;
     timerUtilsEl.style.left = `${weatherEl.offsetLeft + weatherEl.offsetWidth + 10}px`;
+    
+    const stopwatchBtnEl = document.getElementById("stopwatchBtn");
+    const timerBtnEl = document.getElementById("timerBtn");
+
+    stopwatchBtnEl.onclick = () => {
+        if (window.utilBoxState === "" || window.utilBoxState === "timer") {
+            const utilBoxItemsEl = document.getElementById("utilBoxItems");
+            const utilBoxEl = document.getElementById("utilBox");
+            utilBoxEl.style.opacity = "0";
+            utilBoxEl.addEventListener("transitionend",() => {
+                utilBoxEl.style.visibility = "visible";
+                utilBoxEl.style.opacity = "1";
+            });
+            const TUTitleEl = document.getElementById("TUTitle");
+            TUTitleEl.textContent = "Stopwatch";
+            utilBoxItemsEl.innerHTML = window.utilBoxPages[0];
+            window.utilBoxState = "stopwatch";
+        } else if (window.utilBoxState !== "") {
+            window.utilBoxState = "";
+            const utilBoxEl = document.getElementById("utilBox");
+            utilBoxEl.style.opacity = "0";
+            utilBoxEl.addEventListener("transitionend",() => {
+                utilBoxEl.style.visibility = "hidden";
+            });
+        }
+    };
+
+    timerBtnEl.onclick = () => {
+        if (window.utilBoxState === "" || window.utilBoxState === "stopwatch") {
+            const utilBoxItemsEl = document.getElementById("utilBoxItems");
+            utilBoxItemsEl.innerHTML = window.utilBoxPages[1];
+            window.utilBoxState = "timer";
+            const utilBoxEl = document.getElementById("utilBox");
+            utilBoxEl.style.opacity = "0";
+            utilBoxEl.addEventListener("transitionend",() => {
+                utilBoxEl.style.visibility = "visible";
+                utilBoxEl.style.opacity = "1";
+            });
+            const TUTitleEl = document.getElementById("TUTitle");
+            TUTitleEl.textContent = "Timer";
+            const startTimerEl = document.getElementById("startTimer");
+            startTimerEl.disabled = true;
+            const timerMinutesEl = document.getElementById("timerMinutes");
+            const timerSecondsEl = document.getElementById("timerSeconds");
+            timerMinutesEl.addEventListener("change", () => {
+                timerMinutesEl.value = timerMinutesEl.value.padStart(2,"0");
+                const minutes = parseInt(timerMinutesEl.value);
+                const seconds = parseInt(timerSecondsEl.value);
+                if (!minutes && !seconds) {
+                    startTimerEl.disabled = true;
+                } else {
+                    startTimerEl.disabled = false;
+                };
+            });
+            timerSecondsEl.addEventListener("change", () => {
+                timerSecondsEl.value = timerSecondsEl.value.padStart(2,"0");
+                const minutes = parseInt(timerMinutesEl.value);
+                const seconds = parseInt(timerSecondsEl.value);
+                if (!minutes && !seconds) {
+                    startTimerEl.disabled = true;
+                } else {
+                    startTimerEl.disabled = false;
+                };
+            });
+            startTimerEl.onclick = () => {
+                startTimer();
+            }
+        } else if (window.utilBoxState !== "") {
+            window.utilBoxState = "";
+            const utilBoxEl = document.getElementById("utilBox");
+            utilBoxEl.style.opacity = "0";
+            utilBoxEl.addEventListener("transitionend",() => {
+                utilBoxEl.style.visibility = "hidden";
+            });
+        }
+    }
 }
 
-timerPages = [
-    `
-    <div style="display: flex; flex-direction: row; padding-left: 1em;"><h3>Stopwatch</h3></div>
-    <div style="display: flex; flex-direction: column; justify-content: center; width: 100%">
+function startTimer() {
+    const utilBoxItemsEl = document.getElementById("utilBoxItems");
+    const timerMinutesEl = document.getElementById("timerMinutes");
+    const timerSecondsEl = document.getElementById("timerSeconds");
+    utilBoxItemsEl.innerHTML = window.utilBoxPages[2];
+    let minutes = parseInt(timerMinutesEl.value);
+    let seconds = parseInt(timerSecondsEl.value);
 
-    </div>
-    `
-]
+    const timerCache = {
+        minutes,
+        seconds
+    };
+    localStorage.setItem("timerCache",JSON.stringify(timerCache));
 
-function positionUtilsPopup() {
+    const resetTimerEl = document.getElementById("resetTimer");
+    resetTimerEl.onclick = () => {
+        resetTimer();
+    }
+
+    const pauseTimerEl = document.getElementById("pauseTimer");
+    pauseTimerEl.onclick = () => {
+        pauseTimer();
+    }
+
+    const timerMinutesAEl = document.getElementById("timerMinutesA");
+    const timerSecondsAEl = document.getElementById("timerSecondsA");
+    timerMinutesAEl.textContent = String(minutes).padStart(2, "0");
+    timerSecondsAEl.textContent = String(seconds).padStart(2,"0");
+
+    window.timerValue = setInterval(() => {
+        if (seconds === 0 && minutes === 0) {
+            utilBoxItemsEl.innerHTML = window.utilBoxPages[3];
+        }
+        if (seconds === 0) {
+            if (minutes > 0) {
+                minutes--;
+                seconds = 59;
+            }
+        } else {
+            seconds--;
+        }
+        timerMinutesAEl.textContent = String(minutes).padStart(2, "0");
+        timerSecondsAEl.textContent = String(seconds).padStart(2, "0");
+    }, 1000);
+}
+
+function resumeTimer() {
+    const timerMinutesAEl = document.getElementById("timerMinutesA");
+    const timerSecondsAEl = document.getElementById("timerSecondsA");
+    let minutes = parseInt(timerMinutesAEl.textContent);
+    let seconds = parseInt(timerSecondsAEl.textContent);
+    timerMinutesAEl.textContent = String(minutes).padStart(2, "0");
+    timerSecondsAEl.textContent = String(seconds).padStart(2,"0");
+
+    window.timerValue = setInterval(() => {
+        if (seconds === 0 && minutes === 0) {
+            utilBoxItemsEl.innerHTML = window.utilBoxPages[3];
+        }
+        if (seconds === 0) {
+            if (minutes > 0) {
+                minutes--;
+                seconds = 59;
+            }
+        } else {
+            seconds--;
+        }
+        timerMinutesAEl.textContent = String(minutes).padStart(2, "0");
+        timerSecondsAEl.textContent = String(seconds).padStart(2, "0");
+    }, 1000);
+}
+
+function resetTimer() {
+    const utilBoxItemsEl = document.getElementById("utilBoxItems");
+    utilBoxItemsEl.innerHTML = window.utilBoxPages[1];
+    const timerMinutesEl = document.getElementById("timerMinutes");
+    const timerSecondsEl = document.getElementById("timerSeconds");
+    clearInterval(window.timerValue);
+    const parsedTimerCache = JSON.parse(localStorage.getItem("timerCache"));
+    timerMinutesEl.value = String(parsedTimerCache.minutes).padStart(2,"0");
+    timerSecondsEl.value = String(parsedTimerCache.seconds).padStart(2,"0");
+    const startTimerEl = document.getElementById("startTimer");
+    if (!parsedTimerCache.minutes && !parsedTimerCache.seconds) {
+        startTimerEl.disabled = true;
+    } else {
+        startTimerEl.disabled = false;
+    }
+    timerMinutesEl.addEventListener("change", () => {
+        const minutes = parseInt(timerMinutesEl.value);
+        const seconds = parseInt(timerSecondsEl.value);
+        if (!minutes && !seconds) {
+            startTimerEl.disabled = true;
+        } else {
+            startTimerEl.disabled = false;
+        };
+    });
+    timerSecondsEl.addEventListener("change", () => {
+        const minutes = parseInt(timerMinutesEl.value);
+        const seconds = parseInt(timerSecondsEl.value);
+        if (!minutes && !seconds) {
+            startTimerEl.disabled = true;
+        } else {
+            startTimerEl.disabled = false;
+        };
+    });
+    startTimerEl.onclick = () => {
+        startTimer();
+    }
+}
+
+function pauseTimer() {
+    const pauseTimerImgEl = document.getElementById("pauseTimerImg");
+    if (pauseTimerImgEl.src.includes("src/src/pausetimer.png")) {
+        pauseTimerImgEl.src = "src/src/resumetimer.png";
+        clearInterval(window.timerValue);
+    } else {
+        pauseTimerImgEl.src = "src/src/pausetimer.png";
+        resumeTimer();
+    }
+}
+
+function positionUtilBox() {
+    window.utilBoxPages = [
+        `
+            <div style="display: flex; flex-direction: row; justify-content: center; font-weight: 200; font-size: 3em;">
+                <h1 id="stopwatchMinutes">00</h2>
+                <h1>:</h2>
+                <h1 id="stopwatchSeconds">00</h2>
+            </div>
+            <button id="startStopwatch">Start stopwatch</button>
+        `,
+        `
+            <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
+                <input inputmode="numeric" value="00" type="number" id="timerMinutes" class="timerInputFields" min="0"  max="99" step="1" />
+                <h1>:</h1>
+                <input inputmode="numeric" value="00" type="number" id="timerSeconds" class="timerInputFields" min="0"  max="59" step="1" />
+            </div>
+            <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
+                <h1>MM:SS</h1>
+            </div>
+            <button id="startTimer" disabled="true" >Start timer</button>
+        `,
+        `
+            <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; font-size: 3em">
+                <h1 id="timerMinutesA">00</h1>
+                <h1>:</h1>
+                <h1 id="timerSecondsA">00</h1>
+            </div>
+            <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
+                <button class="timerActiveBtn" id="pauseTimer">
+                    <img id="pauseTimerImg" src="src/src/pausetimer.png">
+                </button>
+                <button class="timerActiveBtn" id="resetTimer">
+                    <img src="src/src/stoptimer.png">
+                </button>
+            </div>
+        `,
+        `
+            <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
+                <h1>Time's up!</h1>
+            </div>
+        `
+    ];
+    window.utilBoxState = "";
+    const utilBoxEl = document.getElementById("utilBox");
     const weatherEl = document.getElementById("weather");
-    const utilPopUpEl = document.getElementById("utilPopUp");
+    const todoBoxEl = document.getElementById("todoBox");
     const AIboxEl = document.getElementById("AIbox");
-
-    const rect = weatherEl.getBoundingClientRect();
-    
+    utilBoxEl.style.width = todoBoxEl.getBoundingClientRect().width + 'px'; 
+    utilBoxEl.style.top = weatherEl.getBoundingClientRect().top + weatherEl.getBoundingClientRect().height + 25 + 'px';
     AIboxEl.style.visibility = "visible";
-    utilPopUpEl.style.left = AIboxEl.offsetLeft + AIboxEl.offsetWidth + 25 + 'px';
-    utilPopUpEl.style.top = rect.top + rect.height + 25 + 'px';
+    utilBoxEl.style.left = AIboxEl.getBoundingClientRect().left + AIboxEl.getBoundingClientRect().width + 25 + 'px';
     AIboxEl.style.visibility = "hidden";
-    utilPopUpEl.innerHTML = timerPages[0];
 }
 
 async function getWeather() {
@@ -1386,7 +1612,7 @@ function renderTasks() {
                     itemContainer.addEventListener("transitionend", () => {
                         itemContainer.style.visibility = "hidden";
                         renderTasks();
-                    })
+                    });
                 }, 2500);
             } else if (!checkEl.checked) {
                 clearTimeout(waitForConf);
@@ -1516,7 +1742,6 @@ function initApp() {
         updateGreeting();
         positionWeather();
         positionTimerUtils();
-        positionUtilsPopup();
         getWeather();
         positionManIn();
         positionAbort();
@@ -1524,6 +1749,7 @@ function initApp() {
         getQuoteOfTheday();
         positionSettings();
         positionTodoBox();
+        positionUtilBox();
         renderTasks(); 
         autoRemoveTasks();
         setInterval(() => {

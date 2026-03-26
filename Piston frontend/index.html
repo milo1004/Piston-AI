@@ -6,6 +6,7 @@
             </title>
             <meta charset="UTF-8">
             <link rel="icon" type="image/png" href="src/src/favicon.png">
+            <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9, user-scalable=no">
             <style>
                 @font-face {
                     font-family: "JetbrainsMono";
@@ -14,7 +15,8 @@
 
                 body, html {
                     overflow: hidden;
-                    height: 100%;                
+                    height: 100%;            
+                    scrollbar-width: none;    
                 }
 
                 * {
@@ -39,6 +41,8 @@
                     background-repeat: no-repeat;
                     background-position: center;
                     transition: opacity 0.2s ease;
+                    overscroll-behavior: none;
+                    scrollbar-width: none;
                 }
 
                 .greeting-h2 {
@@ -505,6 +509,7 @@
                     transition: opacity 0.2s ease;
                     position: absolute;
                     z-index: 1000;
+                    transition: opacity 0.2s ease;
                 }
                 
                 #cancelDelete {
@@ -588,18 +593,102 @@
                     background-color: rgba(0,0,0,0.3);
                 }
 
-                #utilPopUp {
-                    background-color: rgba(0,0,0,0.185);
-                    border-radius: 20px;
-                    border: 1px solid gray;
-                    backdrop-filter: blur(3px);
-                    visibility: hidden;
+                #utilBox {
                     display: flex;
                     flex-direction: column;
-                    gap: 5px;
-                    transition: all 0.2s ease;
+                    background-color: rgba(0, 0, 0, 0.185);
+                    backdrop-filter: blur(5px);
+                    border: 1px solid gray;
+                    border-radius: 20px;
+                    box-shadow: 0 6px 20px, (rgba(0, 0, 0, 0.8));
                     position: absolute;
-                    width: 20em;
+                    padding-left: 1em;
+                    padding-right: 1em;
+                    padding-top: 0.3em;
+                    visibility: hidden;
+                    transition: opacity 0.2s ease;
+                }
+
+                #utilBoxItems {
+                    padding-left: 1em;
+                    display: flex;
+                    flex-direction: column;
+                    padding-top: 0.5em; 
+                    overflow-y: auto;
+                    overflow-x: none;
+                    gap: 0.5em;
+                    padding-bottom: 5px;
+                    justify-content: center;
+                    align-items: center;
+                }
+
+                #startTimer {
+                    border-radius: 30px;
+                    background-color: white;
+                    transition: all 0.2s ease;
+                    color: black;
+                    height: 2em;
+                    width: 80%;
+                    border: none;
+                }
+
+                #startTimer:hover {
+                    opacity: 60%;
+                    cursor: pointer;
+                }
+
+                .timerInputFields {
+                    color: black;
+                    text-align: center;
+                    font-size: 2.67em;
+                    margin: 5px;
+                    border-radius: 10px;
+                    border:none;
+                    width: 3em;
+                }
+
+                #startTimer:disabled {
+                    opacity: 20%;
+                    cursor: not-allowed;
+                }
+
+                #startStopwatch {
+                    border-radius: 30px;
+                    background-color: white;
+                    transition: all 0.2s ease;
+                    color: black;
+                    height: 2em;
+                    cursor: pointer;
+                    width: 80%;
+                    border: none;
+                    transition: all 0.2s ease;
+                }
+
+                #startStopwatch:hover {
+                    opacity: 60%;
+                }
+
+                #startStopwatch:disabled {
+                    opacity: 20%;
+                    cursor: not-allowed;
+                }
+
+                .timerActiveBtn {
+                    height: 35px;
+                    width: calc(16px * 4);
+                    border-radius: 17.5px;
+                    background-color: white;
+                    border: white;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    margin: 5px;
+                    transition: all 0.2s ease;
+                }
+
+                .timerActiveBtn:hover {
+                    opacity: 60%;
+                    cursor: pointer;
                 }
             </style>
         </head>
@@ -651,7 +740,12 @@
                     <img style="height:25px; width: 25px;" src="src/src/timer.png">
                 </button>
             </div>
-            <div id="utilPopUp">
+            <div id="utilBox">
+                <div style="width: 100%; display: flex; flex-direction: row; align-items: center; padding-bottom: 3px;">
+                    <h2 id="TUTitle" style="font-weight: 300;">Title</h2>
+                </div>
+                <hr style="background-color: gray;">
+                <div id="utilBoxItems"></div>
             </div>
             <div id="todoBox">
                 <div style="width: 100%; display: flex; flex-direction: row; align-items: center; padding-bottom: 3px;">
