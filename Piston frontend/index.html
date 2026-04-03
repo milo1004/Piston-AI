@@ -7,6 +7,9 @@
             <meta charset="UTF-8">
             <link rel="icon" type="image/png" href="src/src/favicon.png">
             <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9, user-scalable=no">
+            <link rel="apple-touch-icon" sizes="400x400" href="favicon.png">
+            <meta name="mobile-web-app-capable" content="yes">
+            <link rel="icon" type="image/x-icon" href="favicon.png">
             <style>
                 @font-face {
                     font-family: "JetbrainsMono";
@@ -556,6 +559,7 @@
                     margin-top: 1em;
                     margin-left: 0.5em;
                     transition: background-color 0.2s ease;
+                    visibility: hidden;
                 }
 
                 #fullscreenFocusMode:hover {
@@ -684,11 +688,49 @@
                     align-items: center;
                     margin: 5px;
                     transition: all 0.2s ease;
+                    color: black;
+                    font-size: 1em;
                 }
 
                 .timerActiveBtn:hover {
                     opacity: 60%;
                     cursor: pointer;
+                }
+
+                .stopwatchBtns {
+                    height: 35px;
+                    width: calc(16px * 4);
+                    border-radius: 17.5px;
+                    background-color: white;
+                    border: white;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    margin: 5px;
+                    transition: all 0.2s ease;
+                    color: black;
+                    font-size: 1em;
+                }
+
+                .stopwatchBtns:hover {
+                    cursor: pointer;
+                    opacity: 60%;
+                }
+
+                #timeoutReset {
+                    border-radius: 17.5px;
+                    height: 3d5px;
+                    background-color: white;
+                    color: black;
+                    transition: all 0.2s ease;
+                    opacity: 100%;
+                    border: none;
+                    margin: 5px;
+                }
+
+                #timeoutReset:hover {
+                    cursor: pointer;
+                    opacity: 60%;
                 }
             </style>
         </head>
