@@ -1027,8 +1027,7 @@ function alignClock() {
 
 function positionClock() {
     const clockEl = document.getElementById("tc");
-    const greeting = document.getElementById("greeting");
-
+    const greeting = document.getElementById("greeting");    
     const hourEl = document.getElementById("hour");
     const minuteEl = document.getElementById("minute");
     const colonEl = document.getElementById("colon"); 
@@ -1061,6 +1060,7 @@ function positionTimerUtils() {
     stopwatchBtnEl.onclick = () => { // checkpoint for easy searching: stopwatchbtnClick
         if (window.utilBoxState === "" || window.utilBoxState === "timer") {
             const utilBoxItemsEl = document.getElementById("utilBoxItems");
+            utilBoxItemsEl.innerHTML = window.utilBoxPages[0];
             const utilBoxEl = document.getElementById("utilBox");
             if (timerTicking) {
                 localStorage.setItem("timestampBeforePausingTimer", String(Date.now()));
@@ -1072,15 +1072,10 @@ function positionTimerUtils() {
                 }));
             };
             clearInterval(window.timerValue);
-            window.timerValue = null;
-            utilBoxEl.style.opacity = "0";
-            utilBoxEl.addEventListener("transitionend",() => {
-                utilBoxEl.style.visibility = "visible";
-                utilBoxEl.style.opacity = "1";
-            });
+            window.timerValue = null
+            utilBoxEl.style.visibility = "visible";
             const TUTitleEl = document.getElementById("TUTitle");
             TUTitleEl.textContent = "Stopwatch";
-            utilBoxItemsEl.innerHTML = window.utilBoxPages[0];
             window.utilBoxState = "stopwatch";
             const startStopwatchEl = document.getElementById("startStopwatch");
             startStopwatchEl.onclick = () => {
@@ -1109,13 +1104,14 @@ function positionTimerUtils() {
                     seconds: stopwatchSecondsEl.textContent
                 }));
             };
-            const utilBoxItemsEl = document.getElementById("utilBoxItems");
             const utilBoxEl = document.getElementById("utilBox"); 
             utilBoxEl.style.opacity = "0";
-            utilBoxItemsEl.innerHTML = "";
             window.utilBoxState = "";
             utilBoxEl.addEventListener("transitionend",() => {
                 utilBoxEl.style.visibility = "hidden";
+                const utilBoxItemsEl = document.getElementById("utilBoxItems");
+                utilBoxItemsEl.innerHTML = "";
+                utilBoxEl.style.opacity = "1";
             });
         }
     };
@@ -1126,11 +1122,7 @@ function positionTimerUtils() {
             utilBoxItemsEl.innerHTML = window.utilBoxPages[1];
             window.utilBoxState = "timer";
             const utilBoxEl = document.getElementById("utilBox");
-            utilBoxEl.style.opacity = "0";
-            utilBoxEl.addEventListener("transitionend",() => {
-                utilBoxEl.style.visibility = "visible";
-                utilBoxEl.style.opacity = "1";
-            });
+            utilBoxEl.style.visibility = "visible";
             const TUTitleEl = document.getElementById("TUTitle");
             TUTitleEl.textContent = "Timer";
             const startTimerEl = document.getElementById("startTimer");
@@ -1200,9 +1192,10 @@ function positionTimerUtils() {
             utilBoxEl.style.opacity = "0";
             utilBoxEl.addEventListener("transitionend",() => {
                 utilBoxEl.style.visibility = "hidden";
+                const utilBoxItemsEl = document.getElementById("utilBoxItems");
+                utilBoxItemsEl.innerHTML = "";
+                utilBoxEl.style.opacity = "1";
             });
-            const utilBoxItemsEl = document.getElementById("utilBoxItems");
-            utilBoxItemsEl.innerHTML = "";
         }
     }
 }
@@ -2094,12 +2087,12 @@ function initApp() {
         positionManIn();
         positionAbort();
         positionAIBox();
-        getQuoteOfTheday();
         positionSettings();
         positionTodoBox();
         positionUtilBox();
         renderTasks(); 
         autoRemoveTasks();
+        getQuoteOfTheday();
         setInterval(() => {
             getWeather();
             updateGreeting();
@@ -2143,16 +2136,19 @@ function setupDone() {
         positionHint();
         alignClock();
         positionClock();
+        updateGreeting();
         positionWeather();
+        positionTimerUtils();
         getWeather();
         positionManIn();
         positionAbort();
         positionAIBox();
-        getQuoteOfTheday();
         positionSettings();
-        updateGreeting();
+        positionTodoBox();
+        positionUtilBox();
         renderTasks(); 
         autoRemoveTasks();
+        getQuoteOfTheday();
         setInterval(() => {
             getWeather();
             updateGreeting();
