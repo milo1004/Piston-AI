@@ -1060,7 +1060,6 @@ function positionTimerUtils() {
     stopwatchBtnEl.onclick = () => { // checkpoint for easy searching: stopwatchbtnClick
         if (window.utilBoxState === "" || window.utilBoxState === "timer") {
             const utilBoxItemsEl = document.getElementById("utilBoxItems");
-            utilBoxItemsEl.innerHTML = window.utilBoxPages[0];
             const utilBoxEl = document.getElementById("utilBox");
             if (timerTicking) {
                 localStorage.setItem("timestampBeforePausingTimer", String(Date.now()));
@@ -1071,6 +1070,7 @@ function positionTimerUtils() {
                     seconds: timerSecondsAEl.textContent
                 }));
             };
+            utilBoxItemsEl.innerHTML = window.utilBoxPages[0];
             clearInterval(window.timerValue);
             window.timerValue = null
             utilBoxEl.style.visibility = "visible";
@@ -1119,6 +1119,15 @@ function positionTimerUtils() {
     timerBtnEl.onclick = () => { // checkpoint for easy searching: timerbtnClick
         if (window.utilBoxState === "" || window.utilBoxState === "stopwatch") { // checkpoint for easy searching: openTimerPop
             const utilBoxItemsEl = document.getElementById("utilBoxItems");
+            if (stopwatchTicking) {
+                localStorage.setItem("timestampStopwatchBeforePause", String(Date.now()));
+                const stopwatchMinutesEl = document.getElementById("stopwatchMinutes");
+                const stopwatchSecondsEl = document.getElementById("stopwatchSeconds");
+                localStorage.setItem("stopwatchCount", JSON.stringify({
+                    minutes: stopwatchMinutesEl.textContent,
+                    seconds: stopwatchSecondsEl.textContent
+                }));
+            };
             utilBoxItemsEl.innerHTML = window.utilBoxPages[1];
             window.utilBoxState = "timer";
             const utilBoxEl = document.getElementById("utilBox");
