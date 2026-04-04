@@ -1061,7 +1061,7 @@ function positionTimerUtils() {
         if (window.utilBoxState === "" || window.utilBoxState === "timer") {
             const utilBoxItemsEl = document.getElementById("utilBoxItems");
             const utilBoxEl = document.getElementById("utilBox");
-            if (timerTicking) {
+            if (timerTicking && window.utilBoxState === "timer") {
                 localStorage.setItem("timestampBeforePausingTimer", String(Date.now()));
                 const timerMinutesAEl = document.getElementById("timerMinutesA");
                 const timerSecondsAEl = document.getElementById("timerSecondsA");
@@ -1069,6 +1069,7 @@ function positionTimerUtils() {
                     minutes: timerMinutesAEl.textContent,
                     seconds: timerSecondsAEl.textContent
                 }));
+                utilBoxItemsEl.innerHTML = window.utilBoxPages[0];
             };
             utilBoxItemsEl.innerHTML = window.utilBoxPages[0];
             clearInterval(window.timerValue);
@@ -1112,14 +1113,14 @@ function positionTimerUtils() {
                 const utilBoxItemsEl = document.getElementById("utilBoxItems");
                 utilBoxItemsEl.innerHTML = "";
                 utilBoxEl.style.opacity = "1";
-            });
+            }, { once: true });
         }
     };
 
     timerBtnEl.onclick = () => { // checkpoint for easy searching: timerbtnClick
         if (window.utilBoxState === "" || window.utilBoxState === "stopwatch") { // checkpoint for easy searching: openTimerPop
             const utilBoxItemsEl = document.getElementById("utilBoxItems");
-            if (stopwatchTicking) {
+            if (stopwatchTicking && window.utilBoxState === "stopwatch") {
                 localStorage.setItem("timestampStopwatchBeforePause", String(Date.now()));
                 const stopwatchMinutesEl = document.getElementById("stopwatchMinutes");
                 const stopwatchSecondsEl = document.getElementById("stopwatchSeconds");
@@ -1204,7 +1205,7 @@ function positionTimerUtils() {
                 const utilBoxItemsEl = document.getElementById("utilBoxItems");
                 utilBoxItemsEl.innerHTML = "";
                 utilBoxEl.style.opacity = "1";
-            });
+            }, { once: true });
         }
     }
 }
