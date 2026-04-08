@@ -21,7 +21,7 @@ export default {
     
     if (pathname === "/quote") {
       try {
-        const quoteRes = await fetch("https://zenquotes.io/api/random", {
+      const quoteRes = await fetch("https://zenquotes.io/api/random", {
         headers: { "User-Agent": "cloudflare-worker" }
         });
 
@@ -128,8 +128,6 @@ export default {
 
           chat.clear
           alarm.get
-          weather.get.now
-          weather.get.now <lat> <lon>
           memory.add <memory>
           
           All time formats MUST be 24-hour (HHMM).
