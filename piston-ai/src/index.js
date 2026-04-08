@@ -48,8 +48,10 @@ export default {
       }
     } else if (pathname === "/weather") {
       const { latitude, longitude } = request.cf;
-      const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
-      const data = await response.json();
+      const reqURL = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}`;
+      const response = await fetch(reqURL);
+      let data = await response.json();
+      data.requestedURL = reqURL;
       return new Response(
         JSON.stringify(data),
         {

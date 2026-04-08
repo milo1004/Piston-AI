@@ -1585,9 +1585,7 @@ function initWatchDogTimer() {
 async function getWeather() {
     const codes = { 0: "clear", 1: "mostly clear", 2: "partly cloudy", 3: "overcast", 45: "foggy", 48: "foggy", 51: "light drizzle", 61: "rain", 80: "rain showers", 95: "thunderstorm"};
     try {
-        const response = await fetch("https://piston-ai.chanyanyan3205.workers.dev/weather", {
-            signal: AbortSignal.timeout(5000)
-        });
+        const response = await fetch("https://piston-ai.chanyanyan3205.workers.dev/weather");
         const data = await response.json();
         console.log(data);
 
@@ -1611,6 +1609,7 @@ async function getWeather() {
         console.log("Fallback. Using cached data.");
 
         const data = JSON.parse(localStorage.getItem("weatherData"));
+        console.log(data);
         const temp = data.current_weather.temperature.toString();
         const code = codes[data.current_weather.weathercode];
         const tempUnit = data.current_weather_units.temperature;
@@ -1622,8 +1621,7 @@ async function getWeather() {
         tempEl.textContent = temp + tempUnit;
         weatherText.textContent = code;
         const imageName = String(code).toLowerCase().replace(/\s+/g, '-');
-        console.log(imageName);
-        weatherData.src = `./src/src/${imageName}`;
+        weatherData.src = `./src/src/${imageName}.png`;
     }
 }
 
