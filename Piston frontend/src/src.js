@@ -125,7 +125,6 @@ function setLocalItem(key, value) {
 }
 
 function configPistonSettings() {
-    const bg = window.getComputedStyle(document.body).backgroundImage.slice(4, -1).replace(/["']/g, "");
 
     const pistonSettingsEl = document.getElementById("pistonSettings");
     const settingsContainerEl = document.getElementById("settingsContainer");
