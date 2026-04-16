@@ -81,6 +81,8 @@ let stopwatchTicking = false;
 let stopwatchPaused = false;
 let timerTicking = false;
 let timerPaused = false;
+let fullscreenMode = false;
+let streamingChunks = [];
 
 function getPyApi() {
     if (!window.pywebview || !window.pywebview.api) {
@@ -610,10 +612,11 @@ function positionAIBox() {
             uInputBubble.appendChild(uInputEl);
             AIboxEl.appendChild(uInputBubble); 
         } else if (historyMsg[i].role === "assistant") {
-            renderResponse(historyMsg[i].content);
+            renderResponse(historyMsg[i].content, true);
         }
-
     }
+
+    AIboxEl.scrollTop = AIboxEl.scrollHeight;
     AIboxEl.style.visibility = "visible";
     AIboxout = false;
     modAIBox();
@@ -824,27 +827,39 @@ async function noVerboseAsk(uInput) {
     }
 }
 
-function renderResponse(output) {
-    if (!output) return;
-    output = marked.parse(output);
-    const AIboxEl = document.getElementById("AIbox");
-    const pisResBubble = document.createElement("div");
-    pisResBubble.style.color = "gray";
-    pisResBubble.style.backgroundColor = "#a6ff01";
-    pisResBubble.style.borderRadius = "0px 10px 10px 10px";
-    pisResBubble.style.padding = "5px 1em 5px 1em";
-    pisResBubble.style.marginRight = "auto";
-    pisResBubble.style.marginLeft = "5%";
-    pisResBubble.style.width = "fit-content"
-    pisResBubble.style.maxWidth = "60%";
-    pisResBubble.style.marginBottom = "1em";
-    pisResBubble.style.userSelect = "text";
-    pisResBubble.innerHTML += output;
-    const bubbleElements = pisResBubble.querySelectorAll("*");
-    bubbleElements.forEach(el => {
-        el.style.color = 'gray';
-    })
-    AIboxEl.appendChild(pisResBubble);
+function renderResponse(output, initialCreation) {
+    const AIboxEl = document.getElementById("AIbox");   
+    if (initialCreation) {
+        const pisResBubble = document.createElement("div");
+        pisResBubble.style.color = "gray";
+        pisResBubble.style.backgroundColor = "#a6ff01";
+        pisResBubble.style.borderRadius = "0px 10px 10px 10px";
+        pisResBubble.style.padding = "5px 1em 5px 1em";
+        pisResBubble.style.marginRight = "auto";
+        pisResBubble.style.marginLeft = "5%";
+        pisResBubble.style.width = "fit-content"
+        pisResBubble.style.maxWidth = "60%";
+        pisResBubble.style.marginBottom = "1em";
+        pisResBubble.style.userSelect = "text";
+        pisResBubble.innerHTML = marked.parse(output);
+        pisResBubble.id = "pisResBubble";
+        const bubbleElements = pisResBubble.querySelectorAll("*");
+
+        AIboxEl.appendChild(pisResBubble);
+        AIboxEl.lastElementChild.scrollIntoView({ behavior: 'smooth', 'block': 'end' });
+
+        bubbleElements.forEach(el => {
+            el.style.color = 'gray';
+        })
+    } else {
+        const pisResBubble = document.getElementById("pisResBubble");
+        pisResBubble.innerHTML = marked.parse(output);
+        AIboxEl.lastElementChild.scrollIntoView({ behavior: 'smooth', 'block': 'end' });
+        const bubbleElements = pisResBubble.querySelectorAll("*");
+        bubbleElements.forEach(el => {
+            el.style.color = 'gray';
+        })
+    }
 }
 
 async function askPiston(uInput) {
@@ -867,6 +882,7 @@ async function askPiston(uInput) {
                 br.parentNode.removeChild(br);
             })
         }
+
         const uInputBubble = document.createElement("div");
         uInputBubble.style.padding = "5px 1em 5px 1em";
         uInputBubble.style.border = "0";
@@ -886,58 +902,74 @@ async function askPiston(uInput) {
         uInputBubble.appendChild(uInputEl);
         AIboxEl.appendChild(uInputBubble); 
         if (!AIboxout) { modAIBox(); };
-        saveHistory("user", uInput);
-        let memory = `You have access to the memory below: \n The user's name is ${localStorage.getItem("username")}, ${JSON.stringify(localStorage.getItem("memory"))}`;
-        const now = new Date(); 
-        let AdditionalData = `Additional data: \nweather data:${localStorage.getItem("weatherData")}\ndate (DD/MM/YYYY): ${now.getDate().toString().padStart(2,"0")}/${now.getMonth().toString().padStart(2,"0")}/${now.getFullYear}\ntime (hour:minute): ${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}\nuser todo list:${localStorage.getItem("todoList")}\ncurrent quote of the day: ${localStorage.getItem("quote")}`;
-        const result = await fetch("https://piston-ai.chanyanyan3205.workers.dev", {
-            method: "POST",
-            headers: {
-                "Content-Type":"application/json"
-            },
-            body: JSON.stringify({
-                history: historyMsg,
-                prompt: `${memory}\n\n${AdditionalData}\n\nUser input: ${uInput}`
-            })
-        });
-        if (!result.ok) {
-            throw `POST https://piston-ai.chanyanyan3205.cloudflare.com/ ${result.statusText}`;
-        }
-        const response = await result.json();
-        console.log(`Raw reply: ${response.reply}`);
         
-        if (response.reply.slice(0,10).toLowerCase() === "memory.add") {
-            addMemory(response.reply.slice(11, response.reply.length));
-            return;
-        } 
-        if (response.reply.slice(0,12).toLowerCase() === "memory.clear") {
-            renderResponse("Memory cleared!")
-            saveHistory("assistant", "Memory cleared!");
-            return;
-        }
+        saveHistory("user",uInput);
+        const now = new Date();
+        let AdditionalData = `Additional data: \nweather data:${localStorage.getItem("weatherData")}\ndate (DD/MM/YYYY): ${now.getDate().toString().padStart(2,"0")}/${now.getMonth().toString().padStart(2,"0")}/${now.getFullYear}\ntime (hour:minute): ${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}\nuser todo list:${localStorage.getItem("todoList")}\ncurrent quote of the day: ${localStorage.getItem("quote")}`;
+        const payload = {
+            prompt: `${uInput}
 
-        saveHistory("assistant", response.reply);
-            
-        if (response.reply.includes("chat.clear")) {
-            setLocalItem("history", "[]");
-            response.reply = "Chat cleared! Let's start fresh";
-            document.getElementById("AIbox").innerHTML = "";
-            const linebreak = document.createElement("br");
-            linebreak.style.lineHeight = 2.0;
-            AIboxEl.appendChild(linebreak);
+            ${AdditionalData}`,
+            history: historyMsg
         }
+        const result = await fetch("https://piston-ai.chanyanyan3205.workers.dev", 
+            {
+                "method":"POST",
+                'headers': {
+                    'Content-Type': 'application/json'
+                }, 
+                body: JSON.stringify(payload)
+            }
+        )
+        const reader = await result.body.getReader();
+        const decoder = new TextDecoder();
+        let initialCreation = true;
+        
+        let fullMsg = [];
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
 
-        if (response.reply === "Chat cleared! Let's start fresh") {
-            renderResponse("Chat cleared! Let's start fresh");
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split("\n");
+
+            for (const line of lines) {
+                const trimmedLine = line.trim();
+                if (!trimmedLine || !trimmedLine.startsWith("data:")) continue;
+
+                const dataStr = trimmedLine.replace(/^data:\s*/, "");
+                if (dataStr === "[DONE]") break;
+
+                const parsed = JSON.parse(dataStr);
+                const content = parsed.response;
+                console.log(content);
+
+                fullMsg.push(content);
+                console.log(fullMsg.join(""));
+                renderResponse(fullMsg.join(""), initialCreation);
+
+                if (initialCreation) {
+                  initialCreation = false;
+                }
+            }
+        }
+        const pisResBubble = document.getElementById("pisResBubble");
+        pisResBubble.id = "";
+        fullMsg = fullMsg.join("");
+        saveHistory("assistant",fullMsg);
+        if (fullMsg === "chat.clear") {
+            const AIboxEl = document.getElementById("AIbox");
+            AIboxEl.innerHTML = "";
+            localStorage.setItem("history","[]");
+            renderResponse("Chat cleared! Let's start fresh!", true);
+            const pisResBubble = document.getElementById("pisResBubble");
+            pisResBubble.id = "";
             return;
-        } else {
-            renderResponse(response.reply);
         }
     } catch (e) {
-        renderResponse(`Error: ${e.state}, ${e}`);
+        console.error("Failed to ask Piston AI.", e);
     }
 }
-
 function positionHint() {
     const Hint = document.getElementById("SRHint");
     const SRBtn = document.getElementById("startSTT");
@@ -1022,6 +1054,25 @@ function alignClock() {
             positionClock();
         },60000);
     }, remainingSecs * 1000);
+}
+
+function setupFSMode() {
+    const fullscreenFocusModeEl = document.getElementById("fullscreenFocusMode");
+    fullscreenFocusModeEl.onclick = () => {
+        if (fullscreenMode) {
+            exitFullscreenMode();
+        } else {
+            startFullscreenMode();
+        }
+    }
+}
+
+function startFullscreenMode() {
+
+}
+
+function exitFullscreenMode() {
+
 }
 
 function positionClock() {
@@ -1163,23 +1214,9 @@ function positionTimerUtils() {
             }
 
             if (timerTicking) {
-                const timerMinutesEl = document.getElementById("timerMinutes");
-                const timerSecondsEl = document.getElementById("timerSeconds");
-                const cachedTS = parseInt(localStorage.getItem("timestampBeforePausingTimer"));
-                const timeInBetween = getTimeInBetween(cachedTS, Date.now());
-                const cachedMinutes = timeInBetween[0];
-                const cachedSeconds = timeInBetween[1];
-                const storedTimerCount = JSON.parse(localStorage.getItem("timerCount"));
-                console.log(typeof storedTimerCount);
-                let finalMinutes = Number(storedTimerCount.minutes) - cachedMinutes;
-                let finalSeconds = Number(storedTimerCount.seconds) - cachedSeconds;
-                if (finalSeconds < 0) {
-                    finalMinutes--;
-                    finalSeconds += 60;
-                }
-                timerMinutesEl.value = finalMinutes;
-                timerSecondsEl.value = finalSeconds;
-                startTimer(true);
+                const utilBoxItemsEl = document.getElementById("utilBoxItems");
+                utilBoxItemsEl.innerHTML = window.utilBoxPages[2];
+                pickupTimer();
                 if (timerPaused) {
                     pauseTimer();
                 }
@@ -1209,6 +1246,57 @@ function positionTimerUtils() {
     }
 }
 
+function pickupTimer() {
+    const utilBoxItemsEl = document.getElementById("utilBoxItems");
+    utilBoxItemsEl.innerHTML = window.utilBoxPages[2];
+    const timestampBeforePausingTimer = localStorage.getItem("timestampBeforePausingTimer");
+    const timerSecondsAEl = document.getElementById("timerSecondsA");
+    const timerMinutesAEl = document.getElementById("timerMinutesA");
+
+    const timerCount = JSON.parse(localStorage.getItem("timerCount"));
+    timerMinutesAEl.textContent = timerCount.minutes;
+    console.log(timerCount.minutes);
+    timerSecondsAEl.textContent = timerCount.seconds;
+    console.log(timerCount.seconds);
+    if (timerPaused) {
+        pauseTimer();
+        return;
+    } 
+    timeInBetween = getTimeInBetween(localStorage.getItem('timestampBeforePausingTimer'), Date.now());
+    timerMinutesAEl.textContent = String(parseInt(timerMinutesAEl.textContent) - timeInBetween[0]).padStart(2,"0");
+    timerSecondsAEl.textContent = String(parseInt(timerSecondsAEl.textContent) - timeInBetween[1]).padStart(2,"0");
+    const diff = 1000 - (timestampBeforePausingTimer % 1000);
+    console.log(diff);
+    setTimeout(() => {
+        const targetTime = localStorage.getItem("timerTarget");
+        const currentTime = Date.now();
+        if (currentTime > targetTime) {
+            timerTimeout();
+        } else {
+            if (timerSecondsAEl.textContent === "00") {
+                timerSecondsAEl.textContent = "59";
+                timerMinutesAEl.textContent = String(Number(timerMinutesAEl.textContent) - 1).padStart(2, "0");
+            } else {
+                timerSecondsAEl.textContent = String(Number(timerSecondsAEl.textContent) - 1).padStart(2, "0");
+            }
+        }
+        window.timerValue = setInterval(() => {
+            const targetTime = localStorage.getItem("timerTarget");
+            const currentTime = Date.now();
+            if (currentTime > targetTime) {
+                timerTimeout();
+            } else {
+                if (timerSecondsAEl.textContent === "00") {
+                    timerSecondsAEl.textContent = "59";
+                    timerMinutesAEl.textContent = String(Number(timerMinutesAEl.textContent) - 1).padStart(2, "0");
+                } else {
+                    timerSecondsAEl.textContent = String(Number(timerSecondsAEl.textContent) - 1).padStart(2, "0");
+                }
+            }
+        }, 1000);
+    }, diff);
+}
+
 function getTimeInBetween(past, present) {
     // This function gets the difference between two given timestamps. The format of milliseconds elapsed since the Unix epoch. 
     if (past > present) {
@@ -1221,7 +1309,7 @@ function getTimeInBetween(past, present) {
     return [diffMinsStatic, diffSecsStatic];
 }
 
-function startTimer(bypassCaching = false) {
+function startTimer(bypassCaching=false) {
     const utilBoxItemsEl = document.getElementById("utilBoxItems");
     const timerMinutesEl = document.getElementById("timerMinutes");
     const timerSecondsEl = document.getElementById("timerSeconds");
@@ -1236,6 +1324,10 @@ function startTimer(bypassCaching = false) {
         seconds
     };
     localStorage.setItem("timerStartTime", String(Date.now()));
+    const secondsMS = seconds / 60 * 60000;
+    const minutesMS = minutes * 60000;
+    const finalMS = secondsMS + minutesMS;
+    localStorage.setItem("timerTarget", String(Date.now() + finalMS));
     if (!bypassCaching) {
         localStorage.setItem("timerCache",JSON.stringify(timerCache));
     }
@@ -1256,25 +1348,18 @@ function startTimer(bypassCaching = false) {
     timerSecondsAEl.textContent = String(seconds).padStart(2,"0");
 
     window.timerValue = setInterval(() => {
-        if (seconds === 0 && minutes === 0) {
-            utilBoxItemsEl.innerHTML = window.utilBoxPages[3];
-            const timeoutResetEl = document.getElementById("timeoutReset");
-            clearInterval(window.timerValue);
-            window.timerValue = null;
-            timeoutResetEl.onclick = () => {
-                resetTimer();
-            }
-        }
-        if (seconds === 0) {
-            if (minutes > 0) {
-                minutes--;
-                seconds = 59;
-            }
+        const targetTime = localStorage.getItem("timerTarget");
+        const currentTime = Date.now();
+        if (currentTime > targetTime) {
+            timerTimeout();
         } else {
-            seconds--;
+            if (timerSecondsAEl.textContent === "00") {
+                timerSecondsAEl.textContent = "59";
+                timerMinutesAEl.textContent = String(Number(timerMinutesAEl.textContent) - 1).padStart(2, "0");
+            } else {
+                timerSecondsAEl.textContent = String(Number(timerSecondsAEl.textContent) - 1).padStart(2, "0");
+            }
         }
-        timerMinutesAEl.textContent = String(minutes).padStart(2, "0");
-        timerSecondsAEl.textContent = String(seconds).padStart(2, "0");
     }, 1000);
     initWatchDogTimer();
 }
@@ -1290,29 +1375,44 @@ function resumeTimer() {
     localStorage.setItem("timerStartTime", String(Date.now()));
     initWatchDogTimer();
 
-    window.timerValue = setInterval(() => {
-        if (seconds === 0 && minutes === 0) {
-            utilBoxItemsEl.innerHTML = window.utilBoxPages[3];
-            const timeoutResetEl = document.getElementById("timeoutReset");
-            timeoutResetEl.onclick = () => {
-                resetTimer();
-            }
-        }
-        if (seconds === 0) {
-            if (minutes > 0) {
-                minutes--;
-                seconds = 59;
+    const startTime = localStorage.getItem("timerStartTime")
+    const timerPausedVal = Number(localStorage.getItem("timerPausedVal"));
+    const targetTime = Number(localStorage.getItem("timerTarget"));
+    const newTargetTime = String(Date.now() + (targetTime - timerPausedVal));
+    localStorage.setItem("timerTarget", newTargetTime);
+    const diff = 1000 - (startTime % 1000);
+
+    setTimeout(() => {
+        if (timerSecondsAEl.textContent === "00") {
+            if (Date.now() > newTargetTime) {
+                timerTimeout();
+            } else {
+                timerSecondsAEl.textContent = "59";
+                timerMinutesAEl.textContent = String(Number(timerMinutesAEl.textContent) - 1).padStart(2, "0");
             }
         } else {
-            seconds--;
+            timerSecondsAEl.textContent = String(Number(timerSecondsAEl.textContent) - 1).padStart(2, "0");
         }
-        timerMinutesAEl.textContent = String(minutes).padStart(2, "0");
-        timerSecondsAEl.textContent = String(seconds).padStart(2, "0");
-    }, 1000);
+        window.timerValue = setInterval(() => {
+            const targetTime = localStorage.getItem("timerTarget");
+            const currentTime = Date.now();
+            if (currentTime > targetTime) {
+                timerTimeout();
+            } else {
+                if (timerSecondsAEl.textContent === "00") {
+                    timerSecondsAEl.textContent = "59";
+                    timerMinutesAEl.textContent = String(Number(timerMinutesAEl.textContent) - 1).padStart(2, "0");
+                } else {
+                    timerSecondsAEl.textContent = String(Number(timerSecondsAEl.textContent) - 1).padStart(2, "0");
+                }
+            }
+        }, 1000);
+}   , diff);
 }
 
 function timerTimeout() {
     clearInterval(window.timerValue);
+    window.timerValue = null;
     const utilBoxItemsEl = document.getElementById("utilBoxItems");
     utilBoxItemsEl.innerHTML = window.utilBoxPages[3];
     const timeoutResetEl = document.getElementById("timeoutReset");
@@ -1373,6 +1473,7 @@ function pauseTimer() {
         pauseTimerImgEl.src = "src/src/resumetimer.png";
         clearInterval(window.timerValue);
         timerPaused = true;
+        localStorage.setItem("timerPausedVal", String(Date.now()));
         localStorage.removeItem("timerStartTime");
     } else {
         pauseTimerImgEl.src = "src/src/pausetimer.png";
@@ -1545,38 +1646,11 @@ function positionUtilBox() {
 
 function initWatchDogTimer() {
     window.timerWatchDog = setInterval(() => {
-        let startTime = localStorage.getItem("timerStartTime");
-        let timerDuration = localStorage.getItem("timerCache");
-
-        if (!startTime || !timerDuration) {
-            return;
-        }
-        
-        timerDuration = JSON.parse(timerDuration);
-        startTime = parseInt(startTime);
-        const minutes = timerDuration.minutes;
-        const seconds = timerDuration.seconds;
-        const timerDest = startTime + (minutes * 60 + seconds) * 1000;
+        const targetTime = localStorage.getItem("timerTarget");
         const currentTime = Date.now();
-        const utilBoxItemsEl = document.getElementById("utilBoxItems");
-        const utilBoxEl = document.getElementById("utilBox");
-
-        if (currentTime >= timerDest) {
-            clearInterval(window.timerValue);
-            if (window.utilBoxState === "" || window.utilBoxState === "stopwatch") {
-                utilBoxEl.style.opacity = "0";
-                utilBoxEl.addEventListener("transitionend",() => {
-                    utilBoxEl.style.visibility = "visible";
-                    utilBoxEl.style.opacity = "1";
-                });
-                window.utilBoxState = "timer";
-            }
-            utilBoxItemsEl.innerHTML = window.utilBoxPages[3];
-            const timeoutResetEl = document.getElementById("timeoutReset");
-            timeoutResetEl.onclick = () => {
-                resetTimer();
-            }
-            clearInterval(window.timerWatchDog);
+        
+        if (currentTime > targetTime) {
+            timerTimeout();
         }
     }, 500);
 }
@@ -1631,9 +1705,7 @@ async function getQuoteOfTheday() {
     const fontsize = parseFloat(window.getComputedStyle(quoteOfTheDayEl).fontSize);
     qotdEl.style.width = document.getElementById("tc").offsetWidth - fontsize * 1.25 + 'px';
     try {
-        const result = await fetch("https://piston-ai.chanyanyan3205.workers.dev/quote", {
-            signal: AbortSignal.timeout(5000)
-        });
+        const result = await fetch("https://piston-ai.chanyanyan3205.workers.dev/quote");
         const data = await result.json()
         setLocalItem("quote", JSON.stringify(data));
 
@@ -2079,6 +2151,27 @@ function initApp() {
     let userName = localStorage.getItem("username");
     requestMic();
     if (!userName) {
+        positionHint();
+        alignClock();
+        positionClock();
+        updateGreeting();
+        positionWeather();
+        positionTimerUtils();
+        getWeather();
+        positionManIn();
+        positionAbort();
+        positionAIBox();
+        positionSettings();
+        positionTodoBox();
+        positionUtilBox();
+        renderTasks(); 
+        autoRemoveTasks();
+        getQuoteOfTheday();
+        setInterval(() => {
+            getWeather();
+            updateGreeting();
+            autoRemoveTasks();
+        }, 3600000);
         showSetup();
         return;
     } else {

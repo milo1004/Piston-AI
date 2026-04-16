@@ -71,18 +71,11 @@ export default {
         const {
           history = [],
           prompt = "",
-          memories = [],
-          type = "normal"
         } = body;
 
-        const isApplication = type === "application";
-        const model = isApplication
-          ? "@cf/qwen/qwen1.5-7b-chat"
-          : "@cf/meta/llama-3.1-70b-instruct";
+        const model =  "@cf/meta/llama-3.1-70b-instruct";
 
-        const systemPrompt = isApplication
-          ? `You are the secondary Piston AI...`
-          : `You are called Piston AI, a voiced AI assistant.
+        const systemPrompt = `You are called Piston AI, a voiced AI assistant.
 
           You operate in exactly ONE of two modes:
           1) CHAT MODE
@@ -127,7 +120,7 @@ export default {
           ━━━━━━━━━━━━━━━━━━
 
           chat.clear
-          alarm.get
+
           memory.add <memory>
           
           All time formats MUST be 24-hour (HHMM).
@@ -154,7 +147,7 @@ export default {
           Assistant: Yeah, it really is.
           
           User: "I wake up at 5:00 usually"
-          Assistant: That's pretty early 😅
+          Assistant: That's pretty early!
           
           User: "Alarms are annoying"
           Assistant: Haha yeah, but they do their job.
@@ -244,15 +237,16 @@ export default {
 
         const result = await env.AI.run(model, {
           messages,
-          max_tokens: isApplication ? 128 : 512,
-          temperature: isApplication ? 0.2 : 0.6
+          max_tokens: 512,
+          temperature: 0.6,
+          stream: true
         });
 
         return new Response(
-          JSON.stringify({ reply: result.response }),
+          result,
           {
             headers: {
-              "Content-Type": "application/json",
+              "Content-Type": "text/event-stream",
               "Access-Control-Allow-Origin": "*"
             }
           }
